@@ -1,0 +1,10 @@
+{
+  "name": "Preply",
+  "description": "AI-powered voice interview practice and daily skill gap analysis platform.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

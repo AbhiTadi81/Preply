@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary-green: #00ba66;
+    --primary-green-hover: #00a458;
+    --primary-green-light: #e8faf1;
+    --primary-green-border: #b7eed4;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom glow and backdrop effects matching reference */
+.hero-glow {
+  background: radial-gradient(circle 500px at 30% 25%, rgba(0, 186, 102, 0.14), transparent 70%),
+              radial-gradient(circle 450px at 70% 35%, rgba(0, 186, 102, 0.08), transparent 60%);
+}
+
+.footer-glow {
+  background: radial-gradient(ellipse 70% 80% at 50% 120%, rgba(0, 186, 102, 0.16), transparent 70%);
+}
+
+/* Crisp subtle shadows like in reference screenshots */
+.card-subtle-shadow {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.card-hover-shadow:hover {
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.06), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+}
