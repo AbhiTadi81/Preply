@@ -1,20 +1,54 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Preply
 
-# Run and deploy your AI Studio app
+AI resume-based voice interview practice with a React frontend, Node/Express application API, MongoDB persistence, and an internal FastAPI AI service.
 
-This contains everything you need to run your app locally.
+## Local setup
 
-View your app in AI Studio: https://ai.studio/apps/d896095d-d77e-4b29-992c-d3463a85440e
+Prerequisites: Node.js 20+, Python 3.11+, MongoDB, and a configured LLM-compatible API key.
 
-## Run Locally
+1. Install Node dependencies:
 
-**Prerequisites:**  Node.js
+   ```powershell
+   npm install
+   Copy-Item .env.example .env
+   ```
 
+2. Install the AI service dependencies:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```powershell
+   cd backend/ai-service
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   Copy-Item .env.example .env
+   cd ..
+   ```
+
+3. Start MongoDB.
+
+4. Start FastAPI in terminal 1:
+
+   ```powershell
+   cd backend/ai-service
+   .\.venv\Scripts\Activate.ps1
+   uvicorn main:app --reload --port 8000
+   ```
+
+5. Build the React/Tailwind client and start Node/Express in terminal 2:
+
+   ```powershell
+   npm run dev
+   ```
+
+Open `http://localhost:3000`.
+
+The interview setup preserves the existing UI and now sends `easy`, `medium`, or `hard` to Node. Node owns authentication and persistence, and calls FastAPI for resume parsing, question generation, answer evaluation, and final reports. The client is bundled with esbuild and Tailwind CLI; Vite is not used.
+
+## Production build
+
+```powershell
+npm run build
+npm start
+```
+
+The production Node process serves the built React app and the REST API. FastAPI remains an internal service at `AI_SERVICE_URL`.

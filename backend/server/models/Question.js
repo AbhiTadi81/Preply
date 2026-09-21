@@ -1,0 +1,13 @@
+import mongoose from "mongoose";
+
+const questionSchema = new mongoose.Schema({
+  interviewId: { type: mongoose.Schema.Types.ObjectId, ref: "Interview", required: true },
+  question: { type: String, required: true },
+  type: { type: String, default: "resume_project" },
+  topic: String,
+  difficulty: { type: String, enum: ["easy", "medium", "hard"], required: true },
+  expectedConcepts: [String],
+  order: { type: Number, required: true }
+}, { timestamps: true });
+
+export const Question = mongoose.models.Question || mongoose.model("Question", questionSchema);
