@@ -14,10 +14,11 @@ async def evaluate_answer(payload: dict):
         result.setdefault("clarityScore", result.get("overallScore", 0))
         result.setdefault("completenessScore", result.get("overallScore", 0))
         result.setdefault("overallScore", round(sum(result.get(key, 0) for key in ("technicalScore", "clarityScore", "completenessScore")) / 3))
-        if not missing_concepts:
-            result["feedback"] = "Good coverage of the requested concepts. Add more concrete implementation details and measurable results where possible."
-        else:
-            result["feedback"] = f"Address these parts of the question more directly: {', '.join(missing_concepts)}."
+        if not result.get("feedback"):
+            if not missing_concepts:
+                result["feedback"] = "Good coverage of the requested concepts. Add more concrete implementation details and measurable results where possible."
+            else:
+                result["feedback"] = f"Address these parts of the question more directly: {', '.join(missing_concepts)}."
         return result
     answer = payload["answer"].lower()
     concepts = [concept.lower() for concept in payload.get("expectedConcepts", [])]

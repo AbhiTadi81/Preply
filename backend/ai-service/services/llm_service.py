@@ -1,17 +1,53 @@
+import asyncio
 import json
 import os
-import httpx
+from pathlib import Path
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 
-async def complete_json(system_prompt: str, payload: dict):
-    api_key = os.getenv("LLM_API_KEY")
+# Load environment variables: check local ai-service .env, backend .env, and workspace root .env
+load_dotenv()
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+load_dotenv(Path(__file__).resolve().parent.parent.parent.parent / ".env")
+
+_client = None
+
+def get_client() -> genai.Client:
+    global _client
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        return None
-    base_url = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
-    model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-    response = await httpx.AsyncClient(timeout=45).post(
-        f"{base_url}/chat/completions",
-        headers={"Authorization": f"Bearer {api_key}"},
-        json={"model": model, "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": json.dumps(payload)}], "response_format": {"type": "json_object"}},
-    )
-    response.raise_for_status()
-    return json.loads(response.json()["choices"][0]["message"]["content"])
+        raise ValueError("GEMINI_API_KEY environment variable is missing")
+    if _client is None:
+        _client = genai.Client(api_key=api_key)
+    return _client
+
+async def complete_json(system_prompt: str, payload: dict) -> dict:
+    client = get_client()
+    model = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+
+    last_error = None
+    for attempt in range(3):
+        try:
+            response = await client.aio.models.generate_content(
+                model=model,
+                contents=json.dumps(payload),
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    response_mime_type="application/json"
+                )
+            )
+            raw_text = (response.text or "").strip()
+            if not raw_text:
+                raise ValueError("Gemini returned empty response text")
+            return json.loads(raw_text)
+        except Exception as e:
+            last_error = e
+            err_str = str(e)
+            if ("503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str) and attempt < 2:
+                await asyncio.sleep(1.5 * (attempt + 1))
+                continue
+            raise e
+
+    if last_error:
+        raise last_error
