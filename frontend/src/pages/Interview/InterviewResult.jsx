@@ -10,16 +10,17 @@ export const InterviewResult = () => {
   const [report, setReport] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     async function loadReport() {
       setLoading(true);
+      setError(null);
       try {
         let activeSessionId = id;
         if (!activeSessionId) {
           const current = interviewService.getCurrentSession();
-          if (current) {
-            activeSessionId = current.id;
-          }
+          activeSessionId = current?.id || interviewService.getCurrentSessionId();
         }
         if (activeSessionId) {
           const sess = await interviewService.getSession(activeSessionId);
@@ -31,15 +32,50 @@ export const InterviewResult = () => {
         }
       } catch (err) {
         console.error("Failed to load final report:", err);
+        setError(err?.message || "Failed to generate interview report using AI service.");
       } finally {
         setLoading(false);
       }
     }
     loadReport();
   }, [id, navigate]);
+
   if (loading) {
     return <Loading message="Generating your interview report..." />;
   }
+
+  if (error) {
+    return (
+      <div className="py-20 min-h-[85vh] flex items-center justify-center bg-[#fbfdfc]">
+        <div className="text-center p-8 max-w-md bg-white rounded-3xl border border-rose-200 card-subtle-shadow">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 font-bold text-2xl">
+            !
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
+            Report Generation Error
+          </h2>
+          <p className="text-xs text-rose-600 mb-6 font-medium">
+            {error}
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 rounded-2xl bg-[#00ba66] hover:bg-[#00a85b] text-white font-bold text-sm transition-all cursor-pointer"
+            >
+              Retry Generating Report
+            </button>
+            <button
+              onClick={() => navigate("/interview/setup")}
+              className="px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-all cursor-pointer"
+            >
+              Start New Interview
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!report) {
     return <div className="py-20 min-h-[85vh] flex items-center justify-center bg-[#fbfdfc]">
         <div className="text-center p-8 bg-white rounded-3xl border border-slate-200">
@@ -60,8 +96,9 @@ export const InterviewResult = () => {
         <ReportCard
     report={report}
     resumeFileName={session?.resumeFileName || "Candidate_Resume.pdf"}
-    totalQuestions={session?.questions.length || session?.questionCount || 5}
+    totalQuestions={session?.questions?.length || session?.questionCount || 5}
   />
       </Container>
     </div>;
 };
+

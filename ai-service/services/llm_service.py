@@ -6,10 +6,9 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-# Load environment variables: check local ai-service .env, backend .env, and workspace root .env
+# Load environment variables for ai-service
 load_dotenv()
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-load_dotenv(Path(__file__).resolve().parent.parent.parent.parent / ".env")
 
 _client = None
 

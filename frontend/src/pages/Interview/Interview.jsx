@@ -16,6 +16,7 @@ export const Interview = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [currentFeedback, setCurrentFeedback] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
   const {
     isListening,
     transcript,
@@ -28,24 +29,45 @@ export const Interview = () => {
     stopListening,
     resetTranscript
   } = useSpeechRecognition();
+
   useEffect(() => {
     async function loadSession() {
-      if (id) {
-        const found = await interviewService.getSession(id);
-        if (found) {
-          setSession(found);
-          return;
+      try {
+        const targetId = id || interviewService.getCurrentSessionId();
+        if (targetId) {
+          const cached = interviewService.getCurrentSession();
+          if (cached && (cached.id === targetId || cached._id === targetId) && cached.questions?.length) {
+            setSession(cached);
+          }
+          const found = await interviewService.getSession(targetId);
+          if (found) {
+            setSession(found);
+            if (!id && found.id) {
+              navigate(`/interview/${found.id}`, { replace: true });
+            }
+            return;
+          }
         }
-      }
-      const current = interviewService.getCurrentSession();
-      if (current) {
-        setSession(current);
-      } else {
         navigate("/interview/setup");
+      } catch (err) {
+        console.error("Failed to load interview session:", err);
+        const cached = interviewService.getCurrentSession();
+        if (cached && cached.questions?.length) {
+          setSession(cached);
+        } else {
+          navigate("/interview/setup");
+        }
       }
     }
     loadSession();
   }, [id, navigate]);
+
+  useEffect(() => {
+    if (session && (session.status === "completed" || (session.answers && session.questions && session.answers.length >= session.questions.length))) {
+      navigate(`/interview/${session.id}/report`, { replace: true });
+    }
+  }, [session, navigate]);
+
   if (isGeneratingReport) {
     return <div className="py-20 min-h-[85vh] flex items-center justify-center bg-[#fbfdfc]">
         <div className="text-center p-8 max-w-md bg-white rounded-3xl border border-slate-200 card-subtle-shadow">
@@ -75,6 +97,7 @@ export const Interview = () => {
       stopListening();
     }
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await interviewService.submitAnswer(
         session.id,
@@ -91,6 +114,7 @@ export const Interview = () => {
       setSession(res.session);
     } catch (err) {
       console.error("Submit answer error:", err);
+      setSubmitError(err?.message || "Failed to evaluate answer using AI service. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -107,6 +131,7 @@ export const Interview = () => {
       return;
     }
     setCurrentFeedback(null);
+    setSubmitError(null);
     resetTranscript();
     if (isListening) {
       stopListening();
@@ -131,6 +156,22 @@ export const Interview = () => {
             questionNumber={displayQIndex + 1}
     totalQuestions={totalQuestions}
   />
+
+          {submitError && (
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-bold">Evaluation Error:</span>
+                <span>{submitError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSubmitError(null)}
+                className="text-xs font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {
     /* If feedback was received, show feedback card */
@@ -175,3 +216,4 @@ export const Interview = () => {
       </Container>
     </div>;
 };
+

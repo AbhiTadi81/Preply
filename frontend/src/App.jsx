@@ -1,29 +1,35 @@
+/**
+ * Root Application Component
+ * 
+ * Responsibilities:
+ * - Provides client-side routing via React Router (BrowserRouter).
+ * - Wraps the component tree with AuthProvider for global authentication state.
+ * - Renders consistent layout structure: Navbar, page content via AppRoutes, and Footer.
+ */
+
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { AppRoutes } from "./routes/AppRoutes";
+
 export default function App() {
-  return <BrowserRouter>
+  return (
+    <BrowserRouter>
       <AuthProvider>
         <div className="min-h-screen flex flex-col bg-white text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
-          {
-    /* Main responsive navbar */
-  }
+          {/* Main responsive navbar */}
           <Navbar />
 
-          {
-    /* Page Routing */
-  }
-          <div className="flex-1">
+          {/* Dynamic page routes based on current URL path */}
+          <main className="flex-1">
             <AppRoutes />
-          </div>
+          </main>
 
-          {
-    /* Footer with green gradient ambiance */
-  }
+          {/* Global footer */}
           <Footer />
         </div>
       </AuthProvider>
-    </BrowserRouter>;
+    </BrowserRouter>
+  );
 }
