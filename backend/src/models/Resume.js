@@ -1,3 +1,10 @@
+/**
+ * Resume Model
+ * 
+ * Stores the candidate's raw resume text and structured entities
+ * (skills, projects, experience, education, certifications) extracted by the AI service.
+ */
+
 import mongoose from "mongoose";
 
 const resumeSchema = new mongoose.Schema({

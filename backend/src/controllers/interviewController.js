@@ -1,3 +1,12 @@
+/**
+ * Interview Controller
+ * 
+ * Responsibilities:
+ * - Manages mock interview sessions, questions, and answers.
+ * - Coordinates with the AI service to parse resumes and generate role-tailored questions.
+ * - Evaluates candidate answers and triggers final performance report generation.
+ */
+
 import { Answer } from "../models/Answer.js";
 import { Interview } from "../models/Interview.js";
 import { Question } from "../models/Question.js";

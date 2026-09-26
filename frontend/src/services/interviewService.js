@@ -1,3 +1,12 @@
+/**
+ * Interview Service
+ * 
+ * Responsibilities:
+ * - Communicates with backend /api/interviews endpoints.
+ * - Handles creating sessions, submitting answers for evaluation, and retrieving final reports.
+ * - Manages active interview session caching in localStorage.
+ */
+
 import { apiFetch } from "./api";
 
 const CURRENT_SESSION_ID_KEY = "preply_current_session_id";

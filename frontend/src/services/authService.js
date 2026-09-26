@@ -1,3 +1,11 @@
+/**
+ * Auth Service
+ * 
+ * Responsibilities:
+ * - Communicates with backend /api/auth endpoints (register, login, me).
+ * - Manages persisted JWT token and user profile in localStorage.
+ */
+
 import { apiFetch } from "./api";
 
 function storeSession(response) {

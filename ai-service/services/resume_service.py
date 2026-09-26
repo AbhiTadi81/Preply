@@ -1,3 +1,11 @@
+"""
+Resume Service
+
+Responsibilities:
+- Coordinates with Gemini LLM to parse raw resume text into structured candidate data:
+  skills, projects, work experience, education, and certifications.
+"""
+
 import re
 from .llm_service import complete_json
 from prompts.prompts import RESUME_PROMPT

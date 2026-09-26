@@ -1,3 +1,10 @@
+/**
+ * Answer Model
+ * 
+ * Stores a candidate's answer to a specific interview question along with
+ * the AI-evaluated scores (technical, clarity, completeness), missing concepts, and feedback.
+ */
+
 import mongoose from "mongoose";
 
 const answerSchema = new mongoose.Schema({

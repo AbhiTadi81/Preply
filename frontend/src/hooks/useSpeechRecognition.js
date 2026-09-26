@@ -16,6 +16,8 @@ export function useSpeechRecognition() {
   const mediaStreamRef = useRef(null);
   const animFrameRef = useRef(null);
   const simulationIntervalRef = useRef(null);
+  const networkRetryTimeoutRef = useRef(null);
+  const networkRetryCountRef = useRef(0);
   const isExplicitStopRef = useRef(false);
   const isListeningRef = useRef(false);
   const committedTextRef = useRef("");
@@ -49,6 +51,10 @@ export function useSpeechRecognition() {
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
+    }
+    if (networkRetryTimeoutRef.current) {
+      clearTimeout(networkRetryTimeoutRef.current);
+      networkRetryTimeoutRef.current = null;
     }
     setAudioLevel(0);
   }, []);
@@ -129,6 +135,7 @@ export function useSpeechRecognition() {
   const startListening = useCallback(async () => {
     setErrorMessage(null);
     isExplicitStopRef.current = false;
+    networkRetryCountRef.current = 0;
     isListeningRef.current = true;
     committedTextRef.current = transcriptRef.current;
     interimTranscriptRef.current = "";
@@ -154,8 +161,9 @@ export function useSpeechRecognition() {
           }
         }
         const recognition = new SpeechClass();
-        recognition.continuous = true;
+        recognition.continuous = false;
         recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
         recognition.lang = "en-US";
         recognition.onstart = () => {
           setIsListening(true);
@@ -191,13 +199,27 @@ export function useSpeechRecognition() {
             cleanupAudio();
           } else if (event.error === "no-speech") {
           } else if (event.error === "network") {
-            setErrorMessage("The browser speech recognition service is unavailable. Check your browser permissions or type your answer directly.");
-            setIsListening(false);
-            isListeningRef.current = false;
-            cleanupAudio();
+            if (networkRetryCountRef.current < 2 && !isExplicitStopRef.current) {
+              networkRetryCountRef.current += 1;
+              setErrorMessage("Reconnecting to the browser speech recognition service...");
+              networkRetryTimeoutRef.current = setTimeout(() => {
+                networkRetryTimeoutRef.current = null;
+                if (!isExplicitStopRef.current && isListeningRef.current) {
+                  startFreshInstance();
+                }
+              }, 700);
+            } else {
+              setErrorMessage("The browser speech recognition service is unavailable. Try Chrome or Edge, allow microphone access, or type your answer directly.");
+              setIsListening(false);
+              isListeningRef.current = false;
+              cleanupAudio();
+            }
           }
         };
         recognition.onend = () => {
+          if (networkRetryTimeoutRef.current) {
+            return;
+          }
           if (!isExplicitStopRef.current && isListeningRef.current) {
             if (interimTranscriptRef.current) {
               const merged = committedTextRef.current ? `${committedTextRef.current.trim()} ${interimTranscriptRef.current.trim()}` : interimTranscriptRef.current.trim();

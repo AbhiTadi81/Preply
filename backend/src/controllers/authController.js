@@ -1,3 +1,12 @@
+/**
+ * Authentication Controller
+ * 
+ * Responsibilities:
+ * - register: Creates new user accounts, hashes passwords securely with bcrypt, and issues JWT tokens.
+ * - login: Validates email and password, returning user data and JWT token on success.
+ * - getCurrentUser: Returns profile information for the currently authenticated user (via req.user).
+ */
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";

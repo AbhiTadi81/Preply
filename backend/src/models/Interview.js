@@ -1,3 +1,10 @@
+/**
+ * Interview Model
+ * 
+ * Represents an interview session created by a user, tracking target role,
+ * difficulty level, overall status (in_progress / completed), and overall score.
+ */
+
 import mongoose from "mongoose";
 
 const interviewSchema = new mongoose.Schema({

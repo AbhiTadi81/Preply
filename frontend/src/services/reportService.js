@@ -1,3 +1,11 @@
+/**
+ * Report Service
+ * 
+ * Responsibilities:
+ * - Communicates with backend /api/reports endpoints to fetch daily reports and history.
+ * - Provides graceful local fallback data for uninterrupted user experience if offline.
+ */
+
 import { apiFetch } from "./api";
 export const reportService = {
   async getTodayReport() {

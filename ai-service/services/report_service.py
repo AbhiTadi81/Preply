@@ -1,3 +1,11 @@
+"""
+Report Service
+
+Responsibilities:
+- Synthesizes all question evaluations and answers into a comprehensive final report.
+- Produces skill breakdown, strengths, weak areas, resume gaps, and actionable recommendations.
+"""
+
 from fastapi import HTTPException
 from .llm_service import complete_json
 from prompts.prompts import REPORT_PROMPT

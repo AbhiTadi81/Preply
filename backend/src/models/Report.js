@@ -1,3 +1,10 @@
+/**
+ * Report Model
+ * 
+ * Persists the final performance report for an interview session,
+ * containing overall & category scores, skill breakdown, strengths, and recommendations.
+ */
+
 import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema({

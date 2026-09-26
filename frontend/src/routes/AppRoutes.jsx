@@ -1,3 +1,12 @@
+/**
+ * Application Routes
+ * 
+ * Responsibilities:
+ * - Maps URL paths to React page components.
+ * - Protects authenticated routes (Dashboard, Interview, Reports, Profile) via ProtectedRoute.
+ * - Public routes: Home (/), Login (/login), Register (/register).
+ */
+
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Home } from "../pages/Home/Home";

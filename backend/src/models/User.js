@@ -1,3 +1,9 @@
+/**
+ * User Model
+ * 
+ * Represents a registered user with secure password hash, email, and target engineering role.
+ */
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({

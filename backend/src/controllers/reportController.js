@@ -1,3 +1,11 @@
+/**
+ * Report Controller
+ * 
+ * Responsibilities:
+ * - Fetches the latest evaluation report for the current user.
+ * - Fetches historical interview reports for progress tracking.
+ */
+
 import { Report } from "../models/Report.js";
 export const reportController = {
   async getTodayReport(req, res, next) {

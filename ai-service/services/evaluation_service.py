@@ -1,3 +1,11 @@
+"""
+Evaluation Service
+
+Responsibilities:
+- Evaluates candidate answers against expected technical concepts and question context.
+- Generates granular scores (technical, clarity, completeness), missing concepts, and feedback.
+"""
+
 from fastapi import HTTPException
 from .llm_service import complete_json
 from prompts.prompts import EVALUATION_PROMPT

@@ -1,3 +1,11 @@
+"""
+Interview Service
+
+Responsibilities:
+- Generates targeted interview questions grounded in candidate resume details and target role.
+- Prevents question repetition using previous questions history.
+"""
+
 from .llm_service import complete_json
 from prompts.prompts import QUESTION_PROMPT
 

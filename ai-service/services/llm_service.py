@@ -1,3 +1,12 @@
+"""
+LLM Service
+
+Responsibilities:
+- Initializes and manages the Google GenAI client using GEMINI_API_KEY.
+- Provides complete_json: sends prompts with structured JSON output enforcement.
+- Implements retry with exponential backoff for transient rate limits or unavailability.
+"""
+
 import asyncio
 import json
 import os
