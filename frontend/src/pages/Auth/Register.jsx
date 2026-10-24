@@ -25,8 +25,13 @@ export const Register = () => {
     }
     setLoading(true);
     try {
-      await register(name, email.trim(), password, targetRole);
-      navigate("/interview/setup", { replace: true });
+      const response = await register(name, email.trim(), password, targetRole);
+      localStorage.setItem("preply_pending_registration", JSON.stringify({
+        challengeId: response.challengeId,
+        email: response.email,
+        resendAvailableAt: response.resendAvailableAt
+      }));
+      navigate("/verify-email", { replace: true });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message || "Registration failed.");

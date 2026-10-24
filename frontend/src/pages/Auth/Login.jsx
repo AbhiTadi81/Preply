@@ -14,6 +14,7 @@ export const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const successMessage = location.state?.message;
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -51,6 +52,9 @@ export const Login = () => {
             </p>
           </div>
 
+          {successMessage && <div className="mb-6 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 font-medium">
+              {successMessage}
+            </div>}
           {error && <div className="mb-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
               {error}
             </div>}
@@ -83,9 +87,9 @@ export const Login = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                   Password
                 </label>
-                <a href="#forgot" className="text-xs text-[#00ba66] hover:underline font-medium">
+                <Link to="/forgot-password" className="text-xs text-[#00ba66] hover:underline font-medium">
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />

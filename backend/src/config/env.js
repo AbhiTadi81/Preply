@@ -21,5 +21,11 @@ export const ENV = {
   JWT_SECRET: process.env.JWT_SECRET,
   MONGODB_URI: process.env.MONGODB_URI || process.env.DATABASE_URL || "mongodb://localhost:27017/preply",
   AI_SERVICE_URL: process.env.AI_SERVICE_URL || "http://127.0.0.1:8000",
-  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000"
+  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000",
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+  OTP_EXPIRES_MINUTES: 10,
+  PASSWORD_RESET_OTP_EXPIRES_MINUTES: 5,
+  OTP_RESEND_COOLDOWN_SECONDS: 60,
+  OTP_MAX_ATTEMPTS: 5
 };

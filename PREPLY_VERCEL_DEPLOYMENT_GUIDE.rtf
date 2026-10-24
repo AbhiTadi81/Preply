@@ -1,0 +1,215 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}{\f1 Consolas;}}
+\fs32\b Preply Frontend to Vercel Deployment Guide\b0\fs22\par
+\i Generated from the current Preply repository structure and configuration.\i0\par\par
+\fs28\b 1. Project Overview\b0\fs22\par
+Preply is an AI-powered interview preparation platform. Users register, upload a resume, choose interview settings, receive AI-generated questions, answer by typing or browser speech recognition, submit answers for AI evaluation, and view performance reports.\par\par
+The repository contains three independent services:\par
+- frontend: React single-page application\par
+- backend: Node.js and Express REST API\par
+- ai-service: Python FastAPI service using Google Gemini\par\par
+\fs28\b 2. Technology Stack\b0\fs22\par
+\b Frontend\b0\par
+React 19, JavaScript/JSX, custom esbuild bundling, Tailwind CSS 4, React Router, Lucide React icons, Motion animations, and pdfjs-dist. It is not Vite, Next.js, Angular, TypeScript, or Create React App.\par\par
+\b Backend\b0\par
+Node.js, Express 4, ES modules, Mongoose, bcryptjs, jsonwebtoken, cors, and nodemon.\par\par
+\b AI service\b0\par
+Python, FastAPI, Uvicorn, Pydantic, httpx, python-dotenv, and Google GenAI.\par\par
+\b Database\b0\par
+MongoDB accessed through Mongoose. Production should use MongoDB Atlas or another publicly reachable MongoDB deployment.\par\par
+\b Authentication\b0\par
+Passwords are hashed with bcryptjs. Login returns a JWT. The frontend stores the token in localStorage under preply_token and sends it as an Authorization Bearer header. Authentication is not cookie-based.\par\par
+\fs28\b 3. Folder Structure\b0\fs22\par
+\f1\fs20
+preply/\par
+|-- frontend/\par
+|   |-- package.json, package-lock.json\par
+|   |-- .env, .env.example\par
+|   |-- public/index.html\par
+|   |-- public/assets/pdf.worker.mjs\par
+|   |-- scripts/start.js\par
+|   |-- scripts/build.js\par
+|   `-- src/\par
+|       |-- App.jsx, index.js, index.css\par
+|       |-- components/\par
+|       |-- context/AuthContext.jsx\par
+|       |-- hooks/useAuth.js, useSpeechRecognition.js\par
+|       |-- pages/\par
+|       |-- routes/AppRoutes.jsx\par
+|       |-- services/api.js, authService.js, interviewService.js, reportService.js\par
+|       `-- utils/\par
+|-- backend/\par
+|   |-- package.json, package-lock.json\par
+|   |-- .env, .env.example\par
+|   `-- src/\par
+|       |-- app.js, server.js\par
+|       |-- config/db.js, env.js\par
+|       |-- controllers/\par
+|       |-- middleware/authMiddleware.js\par
+|       |-- models/\par
+|       |-- routes/\par
+|       `-- services/aiService.js\par
+|-- ai-service/\par
+|   |-- requirements.txt, .env.example\par
+|   |-- app.py\par
+|   |-- prompts/prompts.py\par
+|   |-- schemas/schemas.py\par
+|   `-- services/\par
+`-- README.md\par
+\f0\fs22\par
+\b Important files\b0\par
+frontend/src/services/api.js centralizes all frontend API calls and reads REACT_APP_API_URL. frontend/src/routes/AppRoutes.jsx defines React Router routes. backend/src/app.js configures Express, CORS, middleware, and REST routes. backend/src/config/env.js loads backend variables. ai-service/app.py exposes the FastAPI AI endpoints.\par\par
+\fs28\b 4. API Communication\b0\fs22\par
+The frontend calls the backend through REST endpoints under /api:\par
+- POST /api/auth/register\par
+- POST /api/auth/login\par
+- GET /api/auth/me\par
+- POST /api/interviews\par
+- GET /api/interviews\par
+- GET /api/interviews/:id\par
+- POST /api/interviews/:id/answer\par
+- GET /api/interviews/:id/report\par
+- GET /api/reports/today\par
+- GET /api/reports/history\par
+- GET /api/health\par\par
+The backend calls the AI service through:\par
+- POST /api/resume/parse\par
+- POST /api/interview/generate-question\par
+- POST /api/interview/evaluate-answer\par
+- POST /api/interview/generate-report\par\par
+The browser never calls MongoDB, Gemini, or the AI service directly.\par\par
+\fs28\b 5. Environment Variables\b0\fs22\par
+\b Frontend: frontend/.env\b0\par
+REACT_APP_API_URL=http://localhost:5000\par
+PORT=3000\par\par
+For Vercel, set only:\par
+REACT_APP_API_URL=https://your-public-backend.example.com\par\par
+REACT_APP_API_URL is safe to expose because it is only a public API address. It is compiled into browser JavaScript. The project requires the REACT_APP_ prefix; VITE_ and NEXT_PUBLIC_ variables will not work.\par\par
+\b Backend: backend/.env\b0\par
+PORT=5000\par
+NODE_ENV=production\par
+MONGODB_URI=<MongoDB Atlas connection string>\par
+JWT_SECRET=<strong private random secret>\par
+AI_SERVICE_URL=https://your-public-ai-service.example.com\par
+FRONTEND_URL=https://your-project.vercel.app\par\par
+\b AI service: ai-service/.env\b0\par
+PORT=8000\par
+GEMINI_API_KEY=<private Gemini API key>\par
+GEMINI_MODEL=<supported Gemini model>\par\par
+Never place MONGODB_URI, JWT_SECRET, GEMINI_API_KEY, or private tokens in Vercel frontend variables.\par\par
+\fs28\b 6. Localhost and Production Problems\b0\fs22\par
+The frontend fallback in frontend/src/services/api.js is http://localhost:5000. This is only for local development. The Vercel variable REACT_APP_API_URL must override it with the public backend URL.\par\par
+Backend local defaults include localhost:3000, localhost:5000, localhost:8000, and 127.0.0.1:8000. Replace them through backend and AI-service production environment variables. A deployed browser cannot reach localhost on your computer.\par\par
+\fs28\b 7. Vercel Configuration\b0\fs22\par
+Deploy the frontend subdirectory, not the repository root.\par\par
+Root Directory: frontend\par
+Framework Preset: Other\par
+Install Command: npm ci\par
+Build Command: npm run build\par
+Output Directory: build\par
+Node.js: 20.x or newer\par
+Vercel environment variable: REACT_APP_API_URL\par\par
+The custom frontend build script uses esbuild and Tailwind CLI and creates frontend/build. Do not use npm start as the Vercel build command.\par\par
+Because the app uses BrowserRouter, add frontend/vercel.json with this content to support direct refreshes of routes such as /dashboard and /profile:\par
+\f1\fs20
+{\par
+  "rewrites": [\par
+    {\par
+      "source": "/(.*)",\par
+      "destination": "/index.html"\par
+    }\par
+  ]\par
+}\par
+\f0\fs22\par
+\fs28\b 8. Backend Deployment Dependency\b0\fs22\par
+The backend is currently a local Node/Express service on port 5000. It must be deployed separately to Render, Railway, Fly.io, Azure, AWS, or another Node.js host. The AI service must also be deployed separately. MongoDB must be hosted by MongoDB Atlas or another accessible provider.\par\par
+Configure the backend with:\par
+NODE_ENV=production\par
+MONGODB_URI=<production MongoDB connection string>\par
+JWT_SECRET=<private secret>\par
+AI_SERVICE_URL=https://your-ai-service.example.com\par
+FRONTEND_URL=https://your-project.vercel.app\par\par
+The backend already supports CORS configuration through FRONTEND_URL. The Vercel origin must match exactly. Since authentication uses Authorization headers and localStorage, cross-domain cookies are not required. HTTPS should be used for the frontend, backend, and AI service.\par\par
+\fs28\b 9. Deployment Procedure\b0\fs22\par
+\b Step 1: Install and test locally\b0\par
+Open a terminal in the repository and run:\par
+\f1\fs20
+cd frontend\par
+npm ci\par
+npm start\par
+\f0\fs22
+Open http://localhost:3000. The React home page should load.\par\par
+\b Step 2: Build locally\b0\par
+Run:\par
+\f1\fs20
+npm run build\par
+\f0\fs22
+The command should generate frontend/build without errors.\par\par
+\b Step 3: Deploy the backend and AI service\b0\par
+Deploy backend and ai-service separately. Verify:\par
+https://your-backend.example.com/api/health\par
+https://your-ai-service.example.com/health\par
+The backend health endpoint should report a connected database.\par\par
+\b Step 4: Push to GitHub\b0\par
+Commit the source and package-lock files. Do not commit .env files.\par\par
+\b Step 5: Create the Vercel project\b0\par
+In Vercel, click Add New, Project, and import the GitHub repository. Set Root Directory to frontend.\par\par
+\b Step 6: Configure build settings\b0\par
+Set Framework Preset to Other, Install Command to npm ci, Build Command to npm run build, and Output Directory to build.\par\par
+\b Step 7: Add the environment variable\b0\par
+In Project Settings > Environment Variables, add REACT_APP_API_URL with the public HTTPS backend URL. Enable it for Production and Preview.\par\par
+\b Step 8: Deploy and test\b0\par
+Click Deploy. Test the home page, login, registration, dashboard, interview setup, reports, profile, and direct refreshes of nested routes.\par\par
+\b Step 9: Diagnose errors\b0\par
+If the build fails, confirm Root Directory is frontend and Output Directory is build. If API requests use localhost, check REACT_APP_API_URL and redeploy. If requests fail with CORS, set backend FRONTEND_URL to the exact Vercel origin and redeploy the backend. If nested routes return 404, add vercel.json and redeploy.\par\par
+\fs28\b 10. Production Architecture\b0\fs22\par
+\f1\fs20
+Internet\par
+  |\par
+  v\par
+Vercel: React frontend (frontend/build)\par
+  | HTTPS REST with JWT Authorization header\par
+  v\par
+Backend host: Node.js + Express API\par
+  |                         |\par
+  v                         v\par
+MongoDB Atlas          AI service host: FastAPI + Gemini\par
+\f0\fs22\par
+\fs28\b 11. Final Checklist\b0\fs22\par
+[ ] Frontend root directory is frontend\par
+[ ] npm run build succeeds locally\par
+[ ] Vercel framework preset is Other\par
+[ ] Build command is npm run build\par
+[ ] Output directory is build\par
+[ ] REACT_APP_API_URL points to the public HTTPS backend\par
+[ ] No production frontend request uses localhost\par
+[ ] Backend is deployed separately\par
+[ ] AI service is deployed separately\par
+[ ] MongoDB is publicly accessible\par
+[ ] JWT_SECRET is configured only on the backend\par
+[ ] MONGODB_URI is configured only on the backend\par
+[ ] GEMINI_API_KEY is configured only on the AI service\par
+[ ] Backend FRONTEND_URL contains the Vercel origin\par
+[ ] Backend health endpoint returns HTTP 200\par
+[ ] Login works from the Vercel domain\par
+[ ] Nested React routes refresh successfully\par
+[ ] HTTPS is enabled for all deployed services\par
+\par
+\fs28\b 12. Email OTP Signup Verification\b0\fs22\par
+Signup now uses a pending MongoDB registration and does not create a User or issue a JWT until the email code is verified. The frontend calls POST /api/auth/register, then displays /verify-email only after the backend has accepted the registration and Resend has accepted the email. POST /api/auth/verify-otp validates the four-digit code, expiration, single-use state, and attempt limit, then creates the user and returns the existing JWT session. POST /api/auth/resend-otp issues a replacement code only when the server-side resendAvailableAt has passed. The 60-second cooldown is atomic in MongoDB and is restored in the UI after refresh. Pending registrations expire automatically after 15 minutes.\par\par
+\b Changed files\b0\par
+backend/src/config/env.js, backend/src/controllers/authController.js, backend/src/models/PendingRegistration.js, backend/src/services/emailService.js, backend/src/routes/authRoutes.js, backend/.env.example, frontend/src/services/api.js, frontend/src/services/authService.js, frontend/src/context/AuthContext.jsx, frontend/src/pages/Auth/Register.jsx, frontend/src/pages/Auth/VerifyEmail.jsx, frontend/src/routes/AppRoutes.jsx.\par\par
+\b Backend environment variables\b0\par
+Add RESEND_API_KEY with the private Resend API key and RESEND_FROM_EMAIL with a sender permitted by Resend, for example Preply <onboarding@resend.dev> for development or a verified production domain sender. These variables belong only in the backend environment and must never use the frontend REACT_APP_ prefix or be committed. The existing PORT, MONGODB_URI, JWT_SECRET, and FRONTEND_URL remain required for the backend.\par\par
+\b Local testing\b0\par
+Copy the backend environment example, set RESEND_API_KEY and RESEND_FROM_EMAIL, start MongoDB, then run npm ci and npm start from backend. Start the frontend with npm ci and npm start from frontend. Register with a new email, enter the real four-digit Resend code, and confirm redirect to /interview/setup. Confirm an existing email is rejected, an incorrect or expired code is rejected, a code cannot be reused, resend is rejected during the 60-second countdown (including after refreshing /verify-email), and login still works for an existing user. Without valid Resend credentials and a permitted sender, registration intentionally returns a configuration or delivery error and does not activate an account.\par\par
+\b Deployment steps and outstanding setup\b0\par
+Deploy the backend changes to the separate Node host described in this guide, set RESEND_API_KEY and RESEND_FROM_EMAIL there, verify the sender/domain in Resend for production, and set the Vercel REACT_APP_API_URL to that backend HTTPS URL. Keep FRONTEND_URL set to the exact Vercel origin for CORS. No email delivery test can be claimed until valid Resend credentials, a permitted sender, reachable MongoDB, and a deployed backend are available.\par
+\par
+\fs28\b 13. Forgot Password Email OTP\b0\fs22\par
+The login page now links to /forgot-password. Password recovery is a separate flow from signup and uses PasswordReset records in MongoDB. The frontend calls POST /api/auth/forgot-password, POST /api/auth/forgot-password/verify-otp, POST /api/auth/forgot-password/resend-otp, and POST /api/auth/forgot-password/reset. Reset OTPs are hashed, expire after 5 minutes, are limited to five attempts, are single-use, and use the same atomic 60-second server-side resend cooldown. After OTP verification, a new password is bcrypt-hashed and existing JWT sessions are invalidated through the user's sessionVersion.\par\par
+\b Changed files\b0\par
+backend/src/models/PasswordReset.js, backend/src/services/emailService.js, backend/src/config/env.js, backend/src/controllers/authController.js, backend/src/routes/authRoutes.js, backend/src/models/User.js, backend/src/middleware/authMiddleware.js, frontend/src/services/authService.js, frontend/src/pages/Auth/Login.jsx, frontend/src/pages/Auth/ForgotPassword.jsx, frontend/src/routes/AppRoutes.jsx.\par\par
+\b Testing and deployment\b0\par
+Use the existing RESEND_API_KEY and RESEND_FROM_EMAIL backend variables; no frontend secret is required. With MongoDB and Resend configured, request a reset, verify valid and invalid codes, wait for expiration, test the 60-second resend response, exceed the attempt limit, set a new password, confirm redirect to login, and confirm the old password and old authenticated JWT no longer work. The frontend and backend build/start checks remain the same as the signup OTP flow. Without valid Resend credentials and a permitted sender, reset requests still return the same generic response and do not modify passwords; the reset record is removed so no account can be changed without a delivered code.\par
+}

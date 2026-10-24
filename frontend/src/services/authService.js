@@ -16,10 +16,52 @@ function storeSession(response) {
 
 export const authService = {
   async register(name, email, password, targetRole) {
-    return storeSession(await apiFetch("/auth/register", {
+    return apiFetch("/auth/register", {
       method: "POST",
       body: JSON.stringify({ name, email, password, targetRole })
+    });
+  },
+
+  async verifyOtp(challengeId, otp) {
+    return storeSession(await apiFetch("/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ challengeId, otp })
     }));
+  },
+
+  async resendOtp(challengeId) {
+    return apiFetch("/auth/resend-otp", {
+      method: "POST",
+      body: JSON.stringify({ challengeId })
+    });
+  },
+
+  async requestPasswordReset(email) {
+    return apiFetch("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  },
+
+  async resendPasswordResetOtp(challengeId) {
+    return apiFetch("/auth/forgot-password/resend-otp", {
+      method: "POST",
+      body: JSON.stringify({ challengeId })
+    });
+  },
+
+  async verifyPasswordResetOtp(challengeId, otp) {
+    return apiFetch("/auth/forgot-password/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ challengeId, otp })
+    });
+  },
+
+  async resetPassword(challengeId, password) {
+    return apiFetch("/auth/forgot-password/reset", {
+      method: "POST",
+      body: JSON.stringify({ challengeId, password })
+    });
   },
 
   async login(email, password) {

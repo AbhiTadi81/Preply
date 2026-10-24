@@ -12,8 +12,9 @@
 
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
+import { User } from "../models/User.js";
 
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 
   // No token provided — let the request continue (public routes are fine)
@@ -23,7 +24,12 @@ export function authMiddleware(req, res, next) {
 
   try {
     const token = authHeader.slice(7);
-    req.user = jwt.verify(token, ENV.JWT_SECRET);
+    const payload = jwt.verify(token, ENV.JWT_SECRET);
+    const user = await User.findById(payload.id).select("sessionVersion");
+    if (!user || (payload.sessionVersion || 0) !== (user.sessionVersion || 0)) {
+      return res.status(401).json({ message: "Invalid or expired authentication token" });
+    }
+    req.user = payload;
     return next();
   } catch {
     return res.status(401).json({ message: "Invalid or expired authentication token" });

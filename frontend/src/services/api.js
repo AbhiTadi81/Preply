@@ -1,11 +1,5 @@
 /**
- * Centralized API Fetch Utility
- * 
- * Responsibilities:
- * - Prepends the backend base URL configured via REACT_APP_API_URL.
- * - Automatically attaches the stored JWT token to the Authorization header when logged in.
- * - Parses JSON responses and throws user-friendly errors when requests fail.
- * - Prevents spreading raw fetch calls across components.
+ * Centralized API Fetch Utility.
  */
 
 const BACKEND_URL =
@@ -22,28 +16,27 @@ export async function apiFetch(endpoint, options = {}) {
     ...options.headers
   };
 
-  // Attach JWT Bearer token if user is authenticated
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers
   });
 
+  const contentType = response.headers.get("content-type") || "";
+  const data = contentType.includes("application/json")
+    ? await response.json().catch(() => ({}))
+    : null;
+
   if (!response.ok) {
-    const contentType = response.headers.get("content-type") || "";
-    const errorData = contentType.includes("application/json")
-      ? await response.json().catch(() => ({}))
-      : {};
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    const error = new Error(data?.message || `Request failed with status ${response.status}`);
+    error.response = data || {};
+    throw error;
   }
 
-  const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
     throw new Error("The server returned an unexpected response. Check that the backend is running.");
   }
 
-  return response.json();
+  return data;
 }

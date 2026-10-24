@@ -30,11 +30,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
   const register = async (name, email, pass, role) => {
+    return authService.register(name, email, pass, role);
+  };
+  const verifyOtp = async (challengeId, otp) => {
     setIsLoading(true);
     try {
-      const res = await authService.register(name, email, pass, role);
+      const res = await authService.verifyOtp(challengeId, otp);
       setUser(res.user);
       setToken(res.token);
+      return res;
     } finally {
       setIsLoading(false);
     }
@@ -44,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
   };
-  return <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+  return <AuthContext.Provider value={{ user, token, isLoading, login, register, verifyOtp, logout }}>
       {children}
     </AuthContext.Provider>;
 };
