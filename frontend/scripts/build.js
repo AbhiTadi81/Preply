@@ -15,8 +15,7 @@ const productionApiOrigin = "https://preply-g9lp.onrender.com";
 // Load frontend .env if present
 dotenv.config({ path: path.join(frontendDir, ".env") });
 
-function validateProductionApiUrl() {
-  const apiUrl = process.env.REACT_APP_API_URL;
+function validateProductionApiUrl(apiUrl) {
   const isProductionBuild = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
   if (!isProductionBuild) return;
   if (!apiUrl) {
@@ -38,7 +37,9 @@ function validateProductionApiUrl() {
 
 async function buildFrontend() {
   console.log("[Build] Starting production build for React frontend...");
-  validateProductionApiUrl();
+  const apiUrl = process.env.REACT_APP_API_URL?.trim();
+  console.log(`[Build] REACT_APP_API_URL configured: ${apiUrl ? "yes" : "no"}`);
+  validateProductionApiUrl(apiUrl);
 
   // 1. Clean output directory
   await fs.rm(buildDir, { recursive: true, force: true });
@@ -57,8 +58,11 @@ async function buildFrontend() {
   const defineEnv = {
     "process.env.NODE_ENV": JSON.stringify("production")
   };
+  if (apiUrl) {
+    defineEnv["process.env.REACT_APP_API_URL"] = JSON.stringify(apiUrl);
+  }
   for (const [key, value] of Object.entries(process.env)) {
-    if (key.startsWith("REACT_APP_")) {
+    if (key.startsWith("REACT_APP_") && key !== "REACT_APP_API_URL") {
       defineEnv[`process.env.${key}`] = JSON.stringify(value);
     }
   }
