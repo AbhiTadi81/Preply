@@ -139,10 +139,15 @@ Each of the three services is designed to be deployed separately to platforms su
 
 ### Frontend Deployment (e.g., Vercel, Netlify)
 - **Root Directory**: `frontend`
+- **Install Command**: `npm ci`
 - **Build Command**: `npm run build`
 - **Output Directory**: `build`
 - **Environment Variables**:
-  - `REACT_APP_API_URL`: URL of the deployed backend (e.g., `https://api.yourdomain.com`)
+  - `REACT_APP_API_URL`: `https://YOUR-ACTUAL-RENDER-BACKEND.onrender.com`
+
+Set `REACT_APP_API_URL` in Vercel for Production (and Preview if required), then redeploy.
+The value must be the public HTTPS backend origin without a duplicated `/api` suffix; the frontend
+adds `/api` to every request. Do not replace the placeholder until the actual Render URL is known.
 
 ### Backend Deployment (e.g., Render, Railway)
 - **Root Directory**: `backend`

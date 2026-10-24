@@ -10,6 +10,7 @@ const frontendDir = path.resolve(__dirname, "..");
 const buildDir = path.join(frontendDir, "build");
 const publicDir = path.join(frontendDir, "public");
 const srcDir = path.join(frontendDir, "src");
+const productionApiOrigin = "https://preply-g9lp.onrender.com";
 
 // Load frontend .env if present
 dotenv.config({ path: path.join(frontendDir, ".env") });
@@ -27,8 +28,11 @@ function validateProductionApiUrl() {
   } catch {
     throw new Error("REACT_APP_API_URL must be a valid absolute HTTP(S) URL.");
   }
-  if (parsed.protocol !== "https:" || /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname)) {
-    throw new Error("REACT_APP_API_URL must be a public HTTPS URL for production.");
+  if (parsed.protocol !== "https:"
+    || /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname)
+    || parsed.hostname.endsWith(".vercel.app")
+    || parsed.origin !== productionApiOrigin) {
+    throw new Error(`REACT_APP_API_URL must be ${productionApiOrigin} for production.`);
   }
 }
 
