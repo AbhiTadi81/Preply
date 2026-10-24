@@ -14,8 +14,27 @@ const srcDir = path.join(frontendDir, "src");
 // Load frontend .env if present
 dotenv.config({ path: path.join(frontendDir, ".env") });
 
+function validateProductionApiUrl() {
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const isProductionBuild = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+  if (!isProductionBuild) return;
+  if (!apiUrl) {
+    throw new Error("REACT_APP_API_URL is required for a production build.");
+  }
+  let parsed;
+  try {
+    parsed = new URL(apiUrl);
+  } catch {
+    throw new Error("REACT_APP_API_URL must be a valid absolute HTTP(S) URL.");
+  }
+  if (parsed.protocol !== "https:" || /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname)) {
+    throw new Error("REACT_APP_API_URL must be a public HTTPS URL for production.");
+  }
+}
+
 async function buildFrontend() {
   console.log("[Build] Starting production build for React frontend...");
+  validateProductionApiUrl();
 
   // 1. Clean output directory
   await fs.rm(buildDir, { recursive: true, force: true });

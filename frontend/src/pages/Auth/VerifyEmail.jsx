@@ -43,7 +43,7 @@ export const VerifyEmail = () => {
   }, [seconds]);
 
   const updatePending = (response) => {
-    const next = { ...pending, resendAvailableAt: response.resendAvailableAt };
+    const next = { ...pending, resendAvailableAt: response.resendAvailableAt, localOtp: response.localOtp };
     localStorage.setItem(PENDING_KEY, JSON.stringify(next));
     setPending(next);
     setSeconds(Math.max(0, Math.ceil((new Date(response.resendAvailableAt) - Date.now()) / 1000)));
@@ -119,6 +119,9 @@ export const VerifyEmail = () => {
         <h1 className="text-2xl font-bold text-slate-900">Verify your email</h1>
         <p className="text-sm text-slate-500 mt-2">Enter the four-digit code sent to <strong className="text-slate-700">{pending.email}</strong>.</p>
         {error && <div className="mt-6 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">{error}</div>}
+        {pending.localOtp && <div className="mt-6 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 font-medium">
+          Local development OTP: <strong className="tracking-widest">{pending.localOtp}</strong>
+        </div>}
         {message && <div className="mt-6 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 font-medium">{message}</div>}
         <form onSubmit={handleSubmit} className="mt-7">
           <div className="flex justify-center gap-3" onPaste={handlePaste}>

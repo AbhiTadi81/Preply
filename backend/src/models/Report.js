@@ -7,6 +7,18 @@
 
 import mongoose from "mongoose";
 
+export function normalizeSkillScores(skillScores) {
+  if (!skillScores || typeof skillScores !== "object" || Array.isArray(skillScores)) {
+    return {};
+  }
+  const entries = skillScores instanceof Map
+    ? Array.from(skillScores.entries())
+    : Object.entries(skillScores);
+  return Object.fromEntries(
+    entries.map(([skill, score]) => [skill, Number(score)])
+  );
+}
+
 const reportSchema = new mongoose.Schema({
   interviewId: { type: mongoose.Schema.Types.ObjectId, ref: "Interview", required: true, unique: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -14,7 +26,7 @@ const reportSchema = new mongoose.Schema({
   technicalScore: Number,
   clarityScore: Number,
   completenessScore: Number,
-  skillScores: { type: Map, of: Number },
+  skillScores: { type: mongoose.Schema.Types.Mixed, default: {}, set: normalizeSkillScores },
   strongAreas: [String],
   weakAreas: [String],
   resumeGaps: [String],

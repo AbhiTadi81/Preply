@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { context } from "esbuild";
 import dotenv from "dotenv";
 
@@ -65,18 +65,30 @@ async function startDevServer() {
   await ctx.watch();
   console.log("[Dev] esbuild is watching for JavaScript changes.");
 
-  // 2. Setup Tailwind compiler in watch mode
+  // 2. Generate the initial stylesheet before accepting requests.
   const npxCmd = process.platform === "win32" ? "npx.cmd" : "npx";
+  const cssOutput = path.join(devBuildDir, "static", "css", "main.css");
+  const tailwindArgs = [
+    "@tailwindcss/cli",
+    "-i",
+    path.join(srcDir, "index.css"),
+    "-o",
+    cssOutput
+  ];
+  const initialTailwind = spawnSync(npxCmd, tailwindArgs, {
+    cwd: frontendDir,
+    stdio: "inherit",
+    shell: process.platform === "win32"
+  });
+
+  if (initialTailwind.error || initialTailwind.status !== 0) {
+    throw initialTailwind.error || new Error(`Tailwind compilation failed with exit code ${initialTailwind.status}`);
+  }
+
+  // 3. Keep Tailwind compiling changes in watch mode.
   const tailwindProcess = spawn(
     npxCmd,
-    [
-      "@tailwindcss/cli",
-      "-i",
-      path.join(srcDir, "index.css"),
-      "-o",
-      path.join(devBuildDir, "static", "css", "main.css"),
-      "--watch"
-    ],
+    [...tailwindArgs, "--watch"],
     {
       cwd: frontendDir,
       stdio: "inherit",
@@ -88,7 +100,7 @@ async function startDevServer() {
     console.error("[Dev] Tailwind watcher error:", err.message);
   });
 
-  // 3. Create HTTP Dev Server with SPA routing fallback
+  // 4. Create HTTP Dev Server with SPA routing fallback
   const server = http.createServer(async (req, res) => {
     const parsedUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
     let pathname = decodeURIComponent(parsedUrl.pathname);

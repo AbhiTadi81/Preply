@@ -29,7 +29,8 @@ export const Register = () => {
       localStorage.setItem("preply_pending_registration", JSON.stringify({
         challengeId: response.challengeId,
         email: response.email,
-        resendAvailableAt: response.resendAvailableAt
+        resendAvailableAt: response.resendAvailableAt,
+        localOtp: response.localOtp
       }));
       navigate("/verify-email", { replace: true });
     } catch (err) {

@@ -42,7 +42,7 @@ function normalizeRegistration(body) {
     ? body.targetRole.trim()
     : "Frontend Developer";
   if (name.length < 2 || name.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    || password.length < 8 || password.length > 128) {
+    || password.length < 8 || password.length > 128 || targetRole.length > 100) {
     return null;
   }
   return { name, email, password, targetRole };
@@ -90,13 +90,19 @@ export const authController = {
         otpExpiresAt: new Date(Date.now() + ENV.OTP_EXPIRES_MINUTES * 60 * 1000),
         resendAvailableAt
       });
+      let emailResult;
       try {
-        await sendSignupOtp(registration.email, otp);
+        emailResult = await sendSignupOtp(registration.email, otp);
       } catch (error) {
         await PendingRegistration.deleteOne({ _id: pending._id });
         throw error;
       }
-      return res.status(202).json({ challengeId, email: registration.email, resendAvailableAt: resendTime(resendAvailableAt) });
+      return res.status(202).json({
+        challengeId,
+        email: registration.email,
+        resendAvailableAt: resendTime(resendAvailableAt),
+        ...(emailResult?.localOtp ? { localOtp: emailResult.localOtp } : {})
+      });
     } catch (error) {
       return next(error);
     }
@@ -124,13 +130,18 @@ export const authController = {
         if (!current) return res.status(404).json({ message: "Verification session expired. Please register again." });
         return res.status(429).json({ message: "Please wait before requesting another code.", resendAvailableAt: resendTime(current.resendAvailableAt) });
       }
+      let emailResult;
       try {
-        await sendSignupOtp(pending.email, otp);
+        emailResult = await sendSignupOtp(pending.email, otp);
       } catch (error) {
         await PendingRegistration.deleteOne({ _id: pending._id });
         throw error;
       }
-      return res.json({ email: pending.email, resendAvailableAt: resendTime(pending.resendAvailableAt) });
+      return res.json({
+        email: pending.email,
+        resendAvailableAt: resendTime(pending.resendAvailableAt),
+        ...(emailResult?.localOtp ? { localOtp: emailResult.localOtp } : {})
+      });
     } catch (error) {
       return next(error);
     }
@@ -181,6 +192,10 @@ export const authController = {
     try {
       const now = new Date();
       const userExists = await User.exists({ email });
+      if (!userExists) {
+        await PasswordReset.deleteOne({ email });
+        return res.status(404).json({ message: "No user exists with this email address." });
+      }
       const existing = await PasswordReset.findOne({ email });
       if (existing && existing.resendAvailableAt > now) {
         return res.status(202).json({
@@ -208,13 +223,11 @@ export const authController = {
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
-      if (userExists) {
-        try {
-          await sendPasswordResetOtp(email, otp);
-        } catch (error) {
-          await PasswordReset.deleteOne({ _id: reset._id });
-          console.warn("[Auth] Password reset email was not delivered:", error.message);
-        }
+      try {
+        await sendPasswordResetOtp(email, otp);
+      } catch (error) {
+        await PasswordReset.deleteOne({ _id: reset._id });
+        console.warn("[Auth] Password reset email was not delivered:", error.message);
       }
       return res.status(202).json({
         message: "If an account exists for this email, a verification code has been sent.",
@@ -310,12 +323,13 @@ export const authController = {
     }
   },
   async login(req, res, next) {
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const email = normalizeEmail(req.body.email);
+    const password = typeof req.body.password === "string" ? req.body.password : "";
+    if (!validEmail(email) || !password || password.length > 128) {
       return res.status(400).json({ message: "Email and password are required" });
     }
     try {
-      const user = await User.findOne({ email: email.trim().toLowerCase() });
+      const user = await User.findOne({ email });
       if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
         return res.status(401).json({ message: "Invalid email or password" });
       }

@@ -17,6 +17,7 @@ import reportRoutes from "./routes/reportRoutes.js";
 import { authMiddleware, errorMiddleware } from "./middleware/authMiddleware.js";
 import { dbState } from "./config/db.js";
 import { ENV } from "./config/env.js";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 
@@ -47,6 +48,23 @@ app.use(
 
 // 2. Parse incoming JSON requests with a reasonable limit for resume uploads
 app.use(express.json({ limit: "15mb" }));
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many authentication requests. Please try again later." }
+});
+app.use("/api/auth", authLimiter);
+const aiRequestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Too many AI requests. Please try again later." }
+});
+app.use("/api/interviews", aiRequestLimiter);
 
 // 3. Safe health check endpoint for monitoring (never leaks internal paths or connection strings)
 app.get("/api/health", (req, res) => {

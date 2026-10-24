@@ -10,7 +10,7 @@
 import { Answer } from "../models/Answer.js";
 import { Interview } from "../models/Interview.js";
 import { Question } from "../models/Question.js";
-import { Report } from "../models/Report.js";
+import { Report, normalizeSkillScores } from "../models/Report.js";
 import { Resume } from "../models/Resume.js";
 import { aiService } from "../services/aiService.js";
 
@@ -55,18 +55,20 @@ export const interviewController = {
   async createSession(req, res, next) {
     try {
       const { resumeFileName = "Resume.pdf", resumeContent = "", questionCount = 5 } = req.body;
-      const targetRole = req.body.targetRole || req.body.role;
+      const targetRole = String(req.body.targetRole || req.body.role || "").trim();
+      const resumeText = typeof resumeContent === "string" ? resumeContent.trim() : "";
       const difficulty = String(req.body.difficulty || "medium").toLowerCase();
       const count = Math.min(20, Math.max(1, Number(questionCount) || 5));
-      if (!targetRole) return res.status(400).json({ message: "Target role is required" });
-      if (!resumeContent.trim()) return res.status(400).json({ message: "Resume text is required" });
+      if (!targetRole || targetRole.length > 100) return res.status(400).json({ message: "Target role must be between 1 and 100 characters" });
+      if (!resumeText) return res.status(400).json({ message: "Resume text is required" });
+      if (resumeText.length > 100000) return res.status(413).json({ message: "Resume text is too large" });
       if (!difficultyValues.includes(difficulty)) return res.status(400).json({ message: "Difficulty must be easy, medium, or hard" });
 
-      const parsedResume = await aiService.parseResume(resumeContent);
+      const parsedResume = await aiService.parseResume(resumeText);
       const resume = await Resume.create({
         userId: req.user.id,
         fileName: resumeFileName,
-        rawText: resumeContent,
+        rawText: resumeText,
         ...parsedResume
       });
       const interview = await Interview.create({
@@ -128,7 +130,9 @@ export const interviewController = {
   async submitAnswer(req, res, next) {
     try {
       const { questionId, transcript } = req.body;
-      if (!transcript?.trim()) return res.status(400).json({ message: "Transcript is required" });
+      const answerText = typeof transcript === "string" ? transcript.trim() : "";
+      if (!answerText) return res.status(400).json({ message: "Transcript is required" });
+      if (answerText.length > 20000) return res.status(413).json({ message: "Transcript is too large" });
       const interview = await Interview.findOne({ _id: req.params.id, userId: req.user.id });
       const question = await Question.findOne({ _id: questionId, interviewId: req.params.id });
       if (!interview || !question) return res.status(404).json({ message: "Interview question not found" });
@@ -137,10 +141,10 @@ export const interviewController = {
         resume,
         question: question.question,
         expectedConcepts: question.expectedConcepts,
-        answer: transcript.trim(),
+        answer: answerText,
         targetRole: interview.targetRole
       });
-      await Answer.create({ interviewId: interview._id, questionId: question._id, transcript: transcript.trim(), ...evaluation });
+      await Answer.create({ interviewId: interview._id, questionId: question._id, transcript: answerText, ...evaluation });
       const answeredCount = await Answer.countDocuments({ interviewId: interview._id });
       const totalQuestions = await Question.countDocuments({ interviewId: interview._id });
       if (answeredCount >= totalQuestions) {
@@ -149,7 +153,16 @@ export const interviewController = {
         interview.completedAt = new Date();
         try {
           const reportData = await aiService.generateReport({ resume, questions: await Question.find({ interviewId: interview._id }).sort({ order: 1 }), answers, evaluations: answers, targetRole: interview.targetRole });
-          await Report.findOneAndUpdate({ interviewId: interview._id }, { interviewId: interview._id, userId: req.user.id, ...reportData }, { upsert: true, new: true, setDefaultsOnInsert: true });
+          await Report.findOneAndUpdate(
+            { interviewId: interview._id },
+            {
+              interviewId: interview._id,
+              userId: req.user.id,
+              ...reportData,
+              skillScores: normalizeSkillScores(reportData.skillScores)
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          );
           interview.overallScore = reportData.overallScore;
         } catch (reportError) {
           console.error("Final report generation deferred:", reportError);
@@ -183,7 +196,12 @@ export const interviewController = {
           evaluations: answers,
           targetRole: interview.targetRole
         });
-        report = await Report.create({ interviewId: interview._id, userId: req.user.id, ...reportData });
+        report = await Report.create({
+          interviewId: interview._id,
+          userId: req.user.id,
+          ...reportData,
+          skillScores: normalizeSkillScores(reportData.skillScores)
+        });
       }
       return res.json(report);
     } catch (error) {

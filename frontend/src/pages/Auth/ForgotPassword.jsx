@@ -60,6 +60,11 @@ export const ForgotPassword = () => {
       setStep("otp");
       setMessage(response.message);
     } catch (err) {
+      if (err?.status === 404) {
+        localStorage.removeItem(RESET_KEY);
+        setReset(null);
+        setStep("email");
+      }
       setError(err instanceof Error ? err.message : "Unable to start password reset.");
     } finally {
       setLoading(false);
