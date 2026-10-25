@@ -12,9 +12,25 @@ const frontendDir = path.resolve(__dirname, "..");
 const publicDir = path.join(frontendDir, "public");
 const srcDir = path.join(frontendDir, "src");
 
-dotenv.config({ path: path.join(frontendDir, ".env") });
+dotenv.config({ path: path.join(frontendDir, ".env"), override: false });
 
 const PORT = Number(process.env.PORT) || 3000;
+
+function validateApiUrl(apiUrl) {
+  if (!apiUrl) {
+    throw new Error("REACT_APP_API_URL is required to start the frontend.");
+  }
+  let parsed;
+  try {
+    parsed = new URL(apiUrl);
+  } catch {
+    throw new Error("REACT_APP_API_URL must be a valid absolute HTTP(S) URL.");
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("REACT_APP_API_URL must use HTTP or HTTPS.");
+  }
+  return parsed;
+}
 
 const MIME_TYPES = {
   ".html": "text/html",
@@ -31,6 +47,9 @@ const MIME_TYPES = {
 
 async function startDevServer() {
   console.log("[Dev] Preparing development build...");
+  const apiUrl = process.env.REACT_APP_API_URL?.trim();
+  validateApiUrl(apiUrl);
+  console.log(`[Dev] REACT_APP_API_URL configured: ${apiUrl ? "yes" : "no"}`);
 
   const devBuildDir = path.join(frontendDir, ".dev-build");
   await fs.rm(devBuildDir, { recursive: true, force: true });
@@ -38,13 +57,17 @@ async function startDevServer() {
   await fs.mkdir(path.join(devBuildDir, "static", "css"), { recursive: true });
 
   const defineEnv = {
-    "process.env.NODE_ENV": JSON.stringify("development")
+    "process.env.NODE_ENV": JSON.stringify("development"),
+    "process.env.REACT_APP_API_URL": JSON.stringify(apiUrl)
   };
   for (const [key, value] of Object.entries(process.env)) {
-    if (key.startsWith("REACT_APP_")) {
-      defineEnv[`process.env.${key}`] = JSON.stringify(value);
-    }
+  if (
+    key.startsWith("REACT_APP_") &&
+    key !== "REACT_APP_API_URL"
+  ) {
+    defineEnv[`process.env.${key}`] = JSON.stringify(value);
   }
+}
 
   // 1. Setup esbuild in watch mode
   const ctx = await context({
@@ -153,7 +176,7 @@ async function startDevServer() {
     console.log(`🚀 Preply React Frontend running at:`);
     console.log(`   Local:   http://localhost:${PORT}`);
     console.log(`   Network: http://0.0.0.0:${PORT}`);
-    console.log(`   Target Backend: ${process.env.REACT_APP_API_URL || "http://localhost:5000"}`);
+    console.log(`   Target Backend configured: ${apiUrl ? "yes" : "no"}`);
     console.log(`==================================================\n`);
   });
 

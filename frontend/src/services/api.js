@@ -2,22 +2,13 @@
  * Centralized API Fetch Utility.
  */
 
-const configuredBackendUrl =
-  typeof process !== "undefined" && process.env
-    ? process.env.REACT_APP_API_URL
-    : undefined;
-const isProduction = typeof process !== "undefined"
-  && process.env
-  && process.env.NODE_ENV === "production";
-const productionApiOrigin = "https://preply-g9lp.onrender.com";
+const configuredBackendUrl = process.env.REACT_APP_API_URL;
+
+const isProduction = process.env.NODE_ENV === "production";
 
 function resolveBackendUrl() {
   if (!configuredBackendUrl) {
-    const localHost = typeof window !== "undefined" ? window.location.hostname : "127.0.0.1";
-    if (isProduction || !["localhost", "127.0.0.1"].includes(localHost)) {
-      throw new Error("REACT_APP_API_URL is required for the deployed frontend.");
-    }
-    return `http://${localHost}:5000`;
+    throw new Error("REACT_APP_API_URL is required for the frontend.");
   }
 
   let parsed;
@@ -30,11 +21,8 @@ function resolveBackendUrl() {
   if (!["http:", "https:"].includes(parsed.protocol)) {
     throw new Error("REACT_APP_API_URL must use HTTP or HTTPS.");
   }
-  if (isProduction && (parsed.protocol !== "https:"
-    || /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname)
-    || parsed.hostname.endsWith(".vercel.app")
-    || parsed.origin !== productionApiOrigin)) {
-    throw new Error(`REACT_APP_API_URL must be ${productionApiOrigin} in production.`);
+  if (isProduction && parsed.protocol !== "https:") {
+    throw new Error("REACT_APP_API_URL must use HTTPS in production.");
   }
 
   return `${parsed.origin}${parsed.pathname.replace(/\/api\/?$/, "").replace(/\/$/, "")}`;

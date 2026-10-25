@@ -10,14 +10,12 @@ const frontendDir = path.resolve(__dirname, "..");
 const buildDir = path.join(frontendDir, "build");
 const publicDir = path.join(frontendDir, "public");
 const srcDir = path.join(frontendDir, "src");
-const productionApiOrigin = "https://preply-g9lp.onrender.com";
 
 // Load frontend .env if present
-dotenv.config({ path: path.join(frontendDir, ".env") });
+dotenv.config({ path: path.join(frontendDir, ".env"), override: false });
 
-function validateProductionApiUrl(apiUrl) {
+function validateApiUrl(apiUrl) {
   const isProductionBuild = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
-  if (!isProductionBuild) return;
   if (!apiUrl) {
     throw new Error("REACT_APP_API_URL is required for a production build.");
   }
@@ -27,19 +25,20 @@ function validateProductionApiUrl(apiUrl) {
   } catch {
     throw new Error("REACT_APP_API_URL must be a valid absolute HTTP(S) URL.");
   }
-  if (parsed.protocol !== "https:"
-    || /^(localhost|127\.0\.0\.1)$/i.test(parsed.hostname)
-    || parsed.hostname.endsWith(".vercel.app")
-    || parsed.origin !== productionApiOrigin) {
-    throw new Error(`REACT_APP_API_URL must be ${productionApiOrigin} for production.`);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("REACT_APP_API_URL must use HTTP or HTTPS.");
   }
+  if (isProductionBuild && parsed.protocol !== "https:") {
+    throw new Error("REACT_APP_API_URL must use HTTPS in production.");
+  }
+  return parsed;
 }
 
 async function buildFrontend() {
   console.log("[Build] Starting production build for React frontend...");
   const apiUrl = process.env.REACT_APP_API_URL?.trim();
   console.log(`[Build] REACT_APP_API_URL configured: ${apiUrl ? "yes" : "no"}`);
-  validateProductionApiUrl(apiUrl);
+  validateApiUrl(apiUrl);
 
   // 1. Clean output directory
   await fs.rm(buildDir, { recursive: true, force: true });
@@ -56,11 +55,9 @@ async function buildFrontend() {
 
   // 3. Collect environment variables prefixed with REACT_APP_
   const defineEnv = {
-    "process.env.NODE_ENV": JSON.stringify("production")
+    "process.env.NODE_ENV": JSON.stringify("production"),
+    "process.env.REACT_APP_API_URL": JSON.stringify(apiUrl)
   };
-  if (apiUrl) {
-    defineEnv["process.env.REACT_APP_API_URL"] = JSON.stringify(apiUrl);
-  }
   for (const [key, value] of Object.entries(process.env)) {
     if (key.startsWith("REACT_APP_") && key !== "REACT_APP_API_URL") {
       defineEnv[`process.env.${key}`] = JSON.stringify(value);
