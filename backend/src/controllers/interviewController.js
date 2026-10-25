@@ -161,7 +161,7 @@ export const interviewController = {
               ...reportData,
               skillScores: normalizeSkillScores(reportData.skillScores)
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
           );
           interview.overallScore = reportData.overallScore;
         } catch (reportError) {

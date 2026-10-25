@@ -121,7 +121,7 @@ export const authController = {
             attempts: 0
           }
         },
-        { new: true }
+        { returnDocument: "after" }
       );
       if (!pending) {
         const current = await PendingRegistration.findOne({ challengeId });
@@ -217,13 +217,13 @@ export const authController = {
             verifiedAt: null
           }
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
       );
       try {
         await sendPasswordResetOtp(email, otp);
       } catch (error) {
         await PasswordReset.deleteOne({ _id: reset._id });
-        console.warn("[Auth] Password reset email was not delivered:", error.message);
+        throw error;
       }
       return res.status(202).json({
         message: "If an account exists for this email, a verification code has been sent.",
@@ -252,7 +252,7 @@ export const authController = {
             resendAvailableAt
           }
         },
-        { new: true }
+        { returnDocument: "after" }
       );
       if (!reset) {
         const current = await PasswordReset.findOne({ challengeId });
@@ -264,7 +264,7 @@ export const authController = {
           await sendPasswordResetOtp(reset.email, otp);
         } catch (error) {
           await PasswordReset.deleteOne({ _id: reset._id });
-          console.warn("[Auth] Password reset email was not delivered:", error.message);
+          throw error;
         }
       }
       return res.json({ email: reset.email, resendAvailableAt: resendTime(resendAvailableAt) });
@@ -290,7 +290,7 @@ export const authController = {
       const verified = await PasswordReset.findOneAndUpdate(
         { _id: reset._id, otpHash: reset.otpHash, attempts: { $lt: ENV.OTP_MAX_ATTEMPTS }, verifiedAt: null },
         { $set: { verifiedAt: new Date(), otpHash: null, otpExpiresAt: null } },
-        { new: true }
+        { returnDocument: "after" }
       );
       if (!verified) return res.status(400).json({ message: "This verification code is invalid or expired." });
       return res.json({ challengeId, email: verified.email });
@@ -310,7 +310,7 @@ export const authController = {
       const user = await User.findOneAndUpdate(
         { email: reset.email },
         { $set: { passwordHash: await bcrypt.hash(password, 12) }, $inc: { sessionVersion: 1 } },
-        { new: true }
+        { returnDocument: "after" }
       );
       if (!user) return res.status(400).json({ message: "Unable to reset the password." });
       return res.json({ message: "Password updated successfully." });
