@@ -90,9 +90,8 @@ export const authController = {
         otpExpiresAt: new Date(Date.now() + ENV.OTP_EXPIRES_MINUTES * 60 * 1000),
         resendAvailableAt
       });
-      let emailResult;
       try {
-        emailResult = await sendSignupOtp(registration.email, otp);
+        await sendSignupOtp(registration.email, otp);
       } catch (error) {
         await PendingRegistration.deleteOne({ _id: pending._id });
         throw error;
@@ -100,8 +99,7 @@ export const authController = {
       return res.status(202).json({
         challengeId,
         email: registration.email,
-        resendAvailableAt: resendTime(resendAvailableAt),
-        ...(emailResult?.localOtp ? { localOtp: emailResult.localOtp } : {})
+        resendAvailableAt: resendTime(resendAvailableAt)
       });
     } catch (error) {
       return next(error);
@@ -130,17 +128,15 @@ export const authController = {
         if (!current) return res.status(404).json({ message: "Verification session expired. Please register again." });
         return res.status(429).json({ message: "Please wait before requesting another code.", resendAvailableAt: resendTime(current.resendAvailableAt) });
       }
-      let emailResult;
       try {
-        emailResult = await sendSignupOtp(pending.email, otp);
+        await sendSignupOtp(pending.email, otp);
       } catch (error) {
         await PendingRegistration.deleteOne({ _id: pending._id });
         throw error;
       }
       return res.json({
         email: pending.email,
-        resendAvailableAt: resendTime(pending.resendAvailableAt),
-        ...(emailResult?.localOtp ? { localOtp: emailResult.localOtp } : {})
+        resendAvailableAt: resendTime(pending.resendAvailableAt)
       });
     } catch (error) {
       return next(error);

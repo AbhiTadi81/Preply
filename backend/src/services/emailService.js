@@ -1,12 +1,8 @@
 import { ENV } from "../config/env.js";
 
 async function sendOtpEmail(email, otp, subject, validityMinutes) {
-  if (!ENV.RESEND_API_KEY || !ENV.RESEND_FROM_EMAIL) {
-    if (ENV.LOCAL_OTP_FALLBACK) {
-      console.warn(`[Email] Local OTP for ${email}: ${otp}`);
-      return { delivered: false, localOtp: otp };
-    }
-    const error = new Error("Email verification is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL.");
+  if (!ENV.BREVO_API_KEY || !ENV.BREVO_FROM_EMAIL) {
+    const error = new Error("Email verification is not configured. Set BREVO_API_KEY and BREVO_FROM_EMAIL.");
     error.status = 503;
     throw error;
   }
@@ -14,26 +10,25 @@ async function sendOtpEmail(email, otp, subject, validityMinutes) {
   let response;
   let responseBody = {};
   try {
-    response = await fetch("https://api.resend.com/emails", {
+    response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${ENV.RESEND_API_KEY}`,
+        "api-key": ENV.BREVO_API_KEY,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: ENV.RESEND_FROM_EMAIL,
-        to: [email],
+        sender: {
+          name: "Preply",
+          email: ENV.BREVO_FROM_EMAIL
+        },
+        to: [{ email }],
         subject,
-        text: `Your Preply verification code is ${otp}. It expires in ${validityMinutes} minutes and can only be used once.`
+        textContent: `Your Preply verification code is ${otp}. It expires in ${validityMinutes} minutes and can only be used once.`
       }),
       signal: AbortSignal.timeout(15000)
     });
     responseBody = await response.json().catch(() => ({}));
   } catch (cause) {
-    if (ENV.LOCAL_OTP_FALLBACK) {
-      console.warn(`[Email] Resend unavailable; local OTP for ${email}: ${otp}`);
-      return { delivered: false, localOtp: otp };
-    }
     const error = new Error("The email provider could not be reached.");
     error.status = 502;
     error.cause = cause;
@@ -41,15 +36,11 @@ async function sendOtpEmail(email, otp, subject, validityMinutes) {
   }
 
   if (!response.ok) {
-    console.error("[Email] Resend rejected message:", {
+    console.error("[Email] Brevo rejected message:", {
       status: response.status,
-      name: responseBody.name,
+      code: responseBody.code,
       message: responseBody.message
     });
-    if (ENV.LOCAL_OTP_FALLBACK) {
-      console.warn(`[Email] Resend rejected message; local OTP for ${email}: ${otp}`);
-      return { delivered: false, localOtp: otp };
-    }
     const error = new Error("We could not send the verification email. Please try again.");
     error.status = response.status === 429 ? 429 : 502;
     throw error;
