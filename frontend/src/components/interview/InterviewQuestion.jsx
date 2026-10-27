@@ -52,11 +52,11 @@ export const InterviewQuestion = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {question.topic && <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200/70">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+          {question.topic && <span className="max-w-[48%] truncate text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200/70">
               {question.topic}
             </span>}
-          <span className="text-xs font-bold text-[#008f4c] bg-[#e8faf1] px-3 py-1 rounded-full border border-[#b7eed4]">
+          <span className="shrink-0 whitespace-nowrap text-xs font-bold text-[#008f4c] bg-[#e8faf1] px-3 py-1 rounded-full border border-[#b7eed4]">
             Question {questionNumber} / {totalQuestions}
           </span>
         </div>

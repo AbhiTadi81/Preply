@@ -124,11 +124,11 @@ export const ProcessSection = () => {
     /* Question bubble */
   }
               <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-5 mb-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                <div className="flex min-w-0 items-center justify-between gap-2 mb-2">
+                  <span className="shrink-0 whitespace-nowrap text-[11px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                     Technical Question
                   </span>
-                  <span className="text-xs text-slate-400">JavaScript • Async Architecture</span>
+                  <span className="min-w-0 truncate text-right text-xs text-slate-400">JavaScript • Async Architecture</span>
                 </div>
                 <h4 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug">
                   Explain the JavaScript event loop and how microtasks differ from macrotasks.

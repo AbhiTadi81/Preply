@@ -48,13 +48,12 @@ export const MobileMenu = ({ isOpen, onClose }) => {
     /* 2. Solid Opaque Slide-out Drawer with 100% white background */
   }
       <div
-    className="fixed right-0 top-0 bottom-0 w-[88vw] max-w-sm z-[101] flex flex-col justify-between shadow-2xl border-l border-slate-200 transition-transform duration-300 ease-out"
-    style={{ backgroundColor: "#ffffff" }}
+    className="dark-mobile-menu fixed right-0 top-0 bottom-0 w-[88vw] max-w-sm z-[101] flex flex-col justify-between shadow-2xl border-l border-slate-200 transition-transform duration-300 ease-out bg-white"
   >
         {
     /* Top Header */
   }
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between" style={{ backgroundColor: "#ffffff" }}>
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white">
           <Link to="/" onClick={onClose} className="text-xl font-bold tracking-tight text-slate-900 flex items-center">
             preply<span className="text-[#00ba66] text-2xl leading-none">.</span>
           </Link>
@@ -71,7 +70,7 @@ export const MobileMenu = ({ isOpen, onClose }) => {
         {
     /* Navigation Items in a shaded, well-spaced list */
   }
-        <div className="flex-1 overflow-y-auto px-5 py-6 space-y-1" style={{ backgroundColor: "#ffffff" }}>
+        <div className="flex-1 overflow-y-auto px-5 py-6 space-y-1 bg-white">
           <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">
             Navigation Menu
           </div>
@@ -109,7 +108,7 @@ export const MobileMenu = ({ isOpen, onClose }) => {
         {
     /* Bottom Actions with high contrast */
   }
-        <div className="p-5 border-t border-slate-100 space-y-2.5" style={{ backgroundColor: "#ffffff" }}>
+        <div className="p-5 border-t border-slate-100 space-y-2.5 bg-white">
           <Link to="/interview/setup" onClick={onClose} className="block w-full">
             <Button
     variant="primary"

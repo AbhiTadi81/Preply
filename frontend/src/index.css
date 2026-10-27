@@ -42,14 +42,55 @@ html.dark .bg-white {
   background-color: #1e293b;
 }
 
+html.dark [class~="bg-white/90"],
+html.dark [class~="bg-white/95"] {
+  background-color: rgba(30, 41, 59, 0.95);
+}
+
 html.dark .bg-\[\#fbfdfc\] {
   background-color: #0f172a;
 }
 
+html.dark .bg-\[\#fcfdfd\] {
+  background-color: #111827;
+}
+
+html.dark .bg-\[\#f7fdfa\] {
+  background-color: #172a25;
+}
+
+html.dark .bg-\[\#f2fcf6\] {
+  background-color: #172a25;
+}
+
+html.dark .bg-\[\#e6f8ef\] {
+  background-color: #1d4031;
+}
+
+html.dark .bg-\[\#f0fbf5\] {
+  background-color: #1d4031;
+}
+
+html.dark .bg-amber-50\/50 {
+  background-color: rgba(120, 83, 20, 0.22);
+}
+
+html.dark .text-amber-800,
+html.dark .text-amber-900 {
+  color: #fde68a;
+}
+
+html.dark .text-emerald-800 {
+  color: #a7f3d0;
+}
+
 html.dark .bg-slate-50,
 html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80,
 html.dark .bg-slate-100,
-html.dark .bg-slate-100\/90 {
+html.dark .bg-slate-100\/90,
+html.dark [class~="hover:bg-slate-50"]:hover,
+html.dark [class~="hover:bg-slate-50/80"]:hover {
   background-color: #273449;
 }
 
@@ -68,10 +109,16 @@ html.dark .text-slate-400 {
   color: #94a3b8;
 }
 
+html.dark .text-slate-300 {
+  color: #64748b;
+}
+
 html.dark .border-slate-100,
 html.dark .border-slate-200,
 html.dark .border-slate-200\/80,
-html.dark .border-slate-200\/90 {
+html.dark .border-slate-200\/90,
+html.dark .border-slate-100\/60,
+html.dark .border-slate-100\/90 {
   border-color: #334155;
 }
 
@@ -88,9 +135,24 @@ html.dark textarea::placeholder {
   color: #94a3b8;
 }
 
+html.dark .hero-glow,
+html.dark .footer-glow {
+  opacity: 0.55;
+}
+
 html.dark header,
 html.dark footer,
-html.dark [style*="background-color: \"#ffffff\""] {
+html.dark .dark-mobile-menu {
   background-color: #1e293b !important;
   border-color: #334155;
+}
+
+html.dark .dark-mobile-menu > div {
+  background-color: #1e293b;
+}
+
+html.dark .shadow-xs,
+html.dark .card-subtle-shadow,
+html.dark .card-hover-shadow:hover {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.28), 0 2px 6px -1px rgba(0, 0, 0, 0.2);
 }

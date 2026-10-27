@@ -33,14 +33,14 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link to="/#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   Features
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#how-it-works" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link to="/#how-it-works" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   How It Works
-                </a>
+                </Link>
               </li>
               <li>
                 <Link to="/dashboard" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
@@ -64,27 +64,27 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#resources" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link to="/interview/setup" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   Interview Guide
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#questions" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link to="/interview/setup" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   Practice Questions
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#skills" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                <Link to="/#features" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                   Skill Topics
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#help" className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2">
+                <Link to="/#how-it-works" className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2">
                   Help Center
                   <span className="text-[10px] bg-[#e8faf1] text-[#008f4c] font-semibold px-2 py-0.5 rounded-full border border-[#b7eed4]">
                     New
                   </span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
