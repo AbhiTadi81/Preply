@@ -11,6 +11,7 @@ class QuestionRequest(BaseModel):
     previousQuestions: list[str] = []
     previousAnswers: list[str] = []
     questionNumber: int = 1
+    interviewType: str = "Technical Interview"
 
 class EvaluationRequest(BaseModel):
     resume: dict[str, Any]

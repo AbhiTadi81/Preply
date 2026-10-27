@@ -13,9 +13,7 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
 import { User } from "../models/User.js";
-import { User } from "../models/User.js";
 
-export async function authMiddleware(req, res, next) {
 export async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 
@@ -27,8 +25,8 @@ export async function authMiddleware(req, res, next) {
   try {
     const token = authHeader.slice(7);
     const payload = jwt.verify(token, ENV.JWT_SECRET);
-    const user = await User.findById(payload.id).select("sessionVersion");
-    if (!user || (payload.sessionVersion || 0) !== (user.sessionVersion || 0)) {
+    const user = await User.findById(payload.id).select("tokenVersion");
+    if (!user || (payload.tokenVersion || 0) !== (user.tokenVersion || 0)) {
       return res.status(401).json({ message: "Invalid or expired authentication token" });
     }
     req.user = payload;

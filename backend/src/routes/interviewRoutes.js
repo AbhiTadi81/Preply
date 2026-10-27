@@ -16,6 +16,8 @@ const router = Router();
 router.use(requireAuth);
 router.post("/", interviewController.createSession);
 router.get("/", interviewController.getAllSessions);
+router.delete("/:id", interviewController.deleteSession);
+router.post("/:id/delete", interviewController.deleteSession);
 router.get("/:id", interviewController.getSession);
 router.get("/:id/report", interviewController.getFinalReport);
 router.post("/:id/answer", interviewController.submitAnswer);

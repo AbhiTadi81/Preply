@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
   targetRole: { type: String, default: "Frontend Developer" },
   preferences: {
-    theme: { type: String, enum: ["light", "dark", "system"], default: "system" }
+    theme: { type: String, enum: ["light", "dark", "system"], default: "light" }
   },
   tokenVersion: { type: Number, default: 0 }
 }, { timestamps: { createdAt: true, updatedAt: false } });

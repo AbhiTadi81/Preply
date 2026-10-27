@@ -46,10 +46,34 @@ export const reportController = {
       return next(error);
     }
   },
+  async deleteInterview(req, res, next) {
+    try {
+      const interview = await Interview.findOne({
+        _id: req.params.id,
+        userId: req.user.id,
+        status: "in_progress"
+      });
+      if (!interview) return res.status(404).json({ message: "In-progress interview not found" });
+      await Promise.all([
+        Question.deleteMany({ interviewId: interview._id }),
+        Answer.deleteMany({ interviewId: interview._id }),
+        Report.deleteMany({ interviewId: interview._id, userId: req.user.id }),
+        Resume.deleteOne({ _id: interview.resumeId, userId: req.user.id })
+      ]);
+      await interview.deleteOne();
+      return res.json({ message: "Interview deleted" });
+    } catch (error) {
+      return next(error);
+    }
+  },
   async downloadReport(req, res, next) {
     try {
       const report = await Report.findOne({ interviewId: req.params.id, userId: req.user.id }).lean();
       if (!report) return res.status(404).json({ message: "Report is not available for this interview" });
+      const [questions, answers] = await Promise.all([
+        Question.find({ interviewId: req.params.id }).sort({ order: 1 }).lean(),
+        Answer.find({ interviewId: req.params.id }).sort({ createdAt: 1 }).lean()
+      ]);
       const lines = [
         "Preply Interview Report",
         `Overall score: ${report.overallScore ?? "Not available"}`,
@@ -60,7 +84,13 @@ export const reportController = {
         `Strengths: ${(report.strongAreas || []).join(", ") || "Not available"}`,
         `Weaknesses: ${(report.weakAreas || []).join(", ") || "Not available"}`,
         `Skill gaps: ${(report.resumeGaps || []).concat(report.projectGaps || []).join(", ") || "Not available"}`,
-        `Recommendations: ${(report.recommendations || []).join("; ") || "Not available"}`
+        `Recommendations: ${(report.recommendations || []).join("; ") || "Not available"}`,
+        "",
+        "Question-level feedback:",
+        ...questions.map((question, index) => {
+          const answer = answers[index];
+          return `${index + 1}. ${question.question} | Score: ${answer?.overallScore ?? "Not available"} | Feedback: ${answer?.feedback || "Not available"} | Skill gaps: ${(answer?.missingConcepts || []).join(", ") || "None"}`;
+        })
       ];
       const escapePdf = (value) => value.replace(/[()\\]/g, "\\$&").slice(0, 110);
       const content = `BT /F1 11 Tf 50 760 Td ${lines.map((line) => `(${escapePdf(line)}) Tj 0 -16 Td`).join(" ")} ET`;
@@ -92,7 +122,7 @@ startxref
       const resume = await Resume.findOne({ _id: interview.resumeId, userId: req.user.id });
       if (!resume) return res.status(404).json({ message: "Resume is not available" });
       res.set({ "Content-Type": "text/plain; charset=utf-8", "Content-Disposition": `attachment; filename="${resume.fileName || "resume"}.txt"` });
-      return res.send(`Generated text export of the original resume (the uploaded file was not stored).\n\n${resume.rawText}`);
+      return res.send(`Resume export (the original uploaded file was not stored).\n\n${resume.rawText}`);
     } catch (error) {
       return next(error);
     }

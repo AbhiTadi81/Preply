@@ -93,9 +93,12 @@ app.use("/api/auth", authLimiter);
 
 const aiRequestLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
+  limit: 60,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  // Session/history reads do not call the AI service. Keep the limit focused
+  // on interview creation, answer evaluation, and report generation.
+  skip: (req) => req.method === "GET" && !req.path.endsWith("/report"),
   message: {
     message: "Too many AI requests. Please try again later.",
   },

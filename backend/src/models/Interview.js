@@ -11,6 +11,11 @@ const interviewSchema = new mongoose.Schema({
 	userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 	resumeId: { type: mongoose.Schema.Types.ObjectId, ref: "Resume", required: true },
 	targetRole: { type: String, required: true },
+	interviewType: {
+		type: String,
+		enum: ["Technical Interview", "Coding Interview", "HR & Behavioral Interview", "Project-Based Interview", "System Design Interview"],
+		default: "Technical Interview"
+	},
 	difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
 	status: { type: String, enum: ["in_progress", "completed"], default: "in_progress" },
 	startedAt: { type: Date, default: Date.now },

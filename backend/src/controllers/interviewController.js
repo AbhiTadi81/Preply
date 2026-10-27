@@ -15,6 +15,7 @@ import { Resume } from "../models/Resume.js";
 import { aiService } from "../services/aiService.js";
 
 const difficultyValues = ["easy", "medium", "hard"];
+const interviewTypeValues = ["Technical Interview", "Coding Interview", "HR & Behavioral Interview", "Project-Based Interview", "System Design Interview"];
 
 function serializeQuestion(question) {
   return {
@@ -40,6 +41,7 @@ async function sessionPayload(interview) {
     role: interview.targetRole,
     targetRole: interview.targetRole,
     difficulty: interview.difficulty,
+    interviewType: interview.interviewType || "Technical Interview",
     questionCount: questions.length,
     questions: questions.map(serializeQuestion),
     currentQuestionIndex: answers.length,
@@ -58,11 +60,13 @@ export const interviewController = {
       const targetRole = String(req.body.targetRole || req.body.role || "").trim();
       const resumeText = typeof resumeContent === "string" ? resumeContent.trim() : "";
       const difficulty = String(req.body.difficulty || "medium").toLowerCase();
+      const interviewType = String(req.body.interviewType || "Technical Interview");
       const count = Math.min(20, Math.max(1, Number(questionCount) || 5));
       if (!targetRole || targetRole.length > 100) return res.status(400).json({ message: "Target role must be between 1 and 100 characters" });
       if (!resumeText) return res.status(400).json({ message: "Resume text is required" });
       if (resumeText.length > 100000) return res.status(413).json({ message: "Resume text is too large" });
       if (!difficultyValues.includes(difficulty)) return res.status(400).json({ message: "Difficulty must be easy, medium, or hard" });
+      if (!interviewTypeValues.includes(interviewType)) return res.status(400).json({ message: "Invalid interview type" });
 
       const parsedResume = await aiService.parseResume(resumeText);
       const resume = await Resume.create({
@@ -75,6 +79,7 @@ export const interviewController = {
         userId: req.user.id,
         resumeId: resume._id,
         targetRole,
+        interviewType,
         difficulty
       });
       const questions = [];
@@ -85,7 +90,8 @@ export const interviewController = {
           difficulty,
           previousQuestions: questions.map((item) => item.question),
           previousAnswers: [],
-          questionNumber: index + 1
+          questionNumber: index + 1,
+          interviewType
         });
         const normalizedQuestion = String(generated.question || "").trim();
         const duplicate = questions.some((item) => item.question.toLowerCase() === normalizedQuestion.toLowerCase());
@@ -113,6 +119,28 @@ export const interviewController = {
       const interview = await Interview.findOne({ _id: req.params.id, userId: req.user.id });
       if (!interview) return res.status(404).json({ message: "Interview session not found" });
       return res.json(await sessionPayload(interview));
+    } catch (error) {
+      return next(error);
+    }
+  },
+
+  async deleteSession(req, res, next) {
+    try {
+      const interview = await Interview.findOne({
+        _id: req.params.id,
+        userId: req.user.id,
+        status: "in_progress"
+      });
+      if (!interview) return res.status(404).json({ message: "In-progress interview not found" });
+
+      await Promise.all([
+        Question.deleteMany({ interviewId: interview._id }),
+        Answer.deleteMany({ interviewId: interview._id }),
+        Report.deleteMany({ interviewId: interview._id, userId: req.user.id }),
+        Resume.deleteOne({ _id: interview.resumeId, userId: req.user.id })
+      ]);
+      await interview.deleteOne();
+      return res.json({ message: "Interview deleted" });
     } catch (error) {
       return next(error);
     }
@@ -203,14 +231,19 @@ export const interviewController = {
           skillScores: normalizeSkillScores(reportData.skillScores)
         });
       }
+      const [reportQuestions, reportAnswers] = await Promise.all([
+        Question.find({ interviewId: interview._id }).sort({ order: 1 }),
+        Answer.find({ interviewId: interview._id }).sort({ createdAt: 1 })
+      ]);
       return res.json({
         ...report.toObject(),
-        questionFeedback: questions.map((question, index) => ({
+        interviewType: interview.interviewType,
+        questionFeedback: reportQuestions.map((question, index) => ({
           question: question.question,
-          answer: answers[index]?.transcript || "",
-          score: answers[index]?.overallScore,
-          feedback: answers[index]?.feedback,
-          missingConcepts: answers[index]?.missingConcepts || []
+          answer: reportAnswers[index]?.transcript || "",
+          score: reportAnswers[index]?.overallScore,
+          feedback: reportAnswers[index]?.feedback,
+          missingConcepts: reportAnswers[index]?.missingConcepts || []
         }))
       });
     } catch (error) {

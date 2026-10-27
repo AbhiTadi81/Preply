@@ -14,6 +14,7 @@ import { User } from "../models/User.js";
 import { PendingRegistration } from "../models/PendingRegistration.js";
 import { PasswordReset } from "../models/PasswordReset.js";
 import { ENV } from "../config/env.js";
+import { sendSignupOtp, sendPasswordResetOtp } from "../services/emailService.js";
 
 const passwordAttempts = new Map();
 function enforcePasswordRateLimit(userId) {
@@ -315,7 +316,7 @@ export const authController = {
       if (!reset) return res.status(400).json({ message: "Verify the email code before setting a new password." });
       const user = await User.findOneAndUpdate(
         { email: reset.email },
-        { $set: { passwordHash: await bcrypt.hash(password, 12) }, $inc: { sessionVersion: 1 } },
+        { $set: { passwordHash: await bcrypt.hash(password, 12) }, $inc: { tokenVersion: 1 } },
         { returnDocument: "after" }
       );
       if (!user) return res.status(400).json({ message: "Unable to reset the password." });
@@ -356,6 +357,9 @@ export const authController = {
         const name = req.body.name.trim();
         if (name.length < 2 || name.length > 100) return res.status(400).json({ message: "Name must be between 2 and 100 characters" });
         updates.name = name;
+      }
+      if (typeof req.body.targetRole === "string" && req.body.targetRole.trim().length > 0 && req.body.targetRole.trim().length <= 100) {
+        updates.targetRole = req.body.targetRole.trim();
       }
       if (req.body.preferences && ["light", "dark", "system"].includes(req.body.preferences.theme)) {
         updates["preferences.theme"] = req.body.preferences.theme;
