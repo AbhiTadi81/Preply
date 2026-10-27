@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
   targetRole: { type: String, default: "Frontend Developer" },
-  sessionVersion: { type: Number, default: 0 }
+  preferences: {
+    theme: { type: String, enum: ["light", "dark", "system"], default: "system" }
+  },
+  tokenVersion: { type: Number, default: 0 }
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
 export const User = mongoose.models.User || mongoose.model("User", userSchema);

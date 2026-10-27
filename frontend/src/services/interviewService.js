@@ -59,7 +59,8 @@ export const interviewService = {
         resumeContent: options.resumeContent || "",
         questionCount: options.questionCount || 5,
         difficulty: (options.difficulty || "medium").toLowerCase(),
-        targetRole: options.targetRole || options.role || "Full Stack & Software Engineer"
+        targetRole: options.targetRole || options.role || "Full Stack & Software Engineer",
+        interviewType: options.interviewType || "Technical Interview"
       })
     });
     this.saveCurrentSession(session);
@@ -86,6 +87,22 @@ export const interviewService = {
     return apiFetch(`/interviews/${sessionId}/report`);
   },
 
+  deleteSession(sessionId) {
+    return apiFetch(`/reports/interviews/${sessionId}/delete`, { method: "POST" }).catch((error) => {
+      if (error.status !== 404) throw error;
+      return apiFetch(`/reports/interviews/${sessionId}`, { method: "DELETE" });
+    }).catch((error) => {
+      if (error.status !== 404) throw error;
+      return apiFetch(`/interviews/${sessionId}/delete`, { method: "POST" });
+    }).catch((error) => {
+      if (error.status !== 404) throw error;
+      return apiFetch(`/interviews/${sessionId}`, { method: "DELETE" });
+    }).then((response) => {
+      if (this.getCurrentSessionId() === String(sessionId)) this.clearCurrentSession();
+      return response;
+    });
+  },
+
   async getSession(id) {
     const session = await apiFetch(`/interviews/${id}`);
     if (session) {
@@ -98,4 +115,3 @@ export const interviewService = {
     return apiFetch("/interviews");
   }
 };
-

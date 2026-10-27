@@ -6,7 +6,6 @@ import {
   RotateCcw,
   Sparkles,
   BookOpen,
-  CheckCircle2,
   AlertTriangle,
   AlertCircle,
   FileCheck,
@@ -261,16 +260,15 @@ export const ReportCard = ({
           {
     /* Coverage Summary Metrics */
   }
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8faf1] border border-[#b7eed4] text-[#008f4c] font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+          <div className="flex flex-nowrap items-center gap-1 sm:gap-2 text-xs overflow-x-auto">
+            <span className="inline-flex shrink-0 items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full bg-[#e8faf1] border border-[#b7eed4] text-[#008f4c] font-bold whitespace-nowrap">
               <span>{testedCount} Tested</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold">
+            <span className="inline-flex shrink-0 items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold whitespace-nowrap">
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>{partialCount} Partially Tested</span>
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-bold">
+            <span className="inline-flex shrink-0 items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 font-bold whitespace-nowrap">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>{untestedCount} Not Tested</span>
             </span>
@@ -318,11 +316,11 @@ export const ReportCard = ({
                       </span>}
                     {item.status === "Partially Tested" && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold shadow-2xs">
                         <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>⚠ Partially Tested</span>
+                        <span>Partially Tested</span>
                       </span>}
                     {item.status === "Not Tested" && <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold shadow-2xs">
                         <AlertCircle className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>⚠ Not Tested</span>
+                        <span>Not Tested</span>
                       </span>}
                   </td>
                 </tr>)}

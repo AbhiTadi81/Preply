@@ -3,21 +3,18 @@ export const DIFFICULTY_OPTIONS = [
   {
     value: "Easy",
     label: "Easy",
-    tag: "Foundational",
     description: "Core concepts, fundamentals & syntax",
     icon: Sparkles
   },
   {
     value: "Medium",
     label: "Medium",
-    tag: "Recommended",
     description: "Practical problem solving & trade-offs",
     icon: Zap
   },
   {
     value: "Hard",
     label: "Hard",
-    tag: "Advanced",
     description: "Complex system architecture & edge cases",
     icon: Flame
   }
@@ -62,11 +59,6 @@ export const DifficultySelector = ({
                   </span>
                 </div>
 
-                <span
-      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${isSelected ? "bg-white/20 text-white" : isSelected ? "bg-white text-slate-900" : "bg-slate-100 text-slate-600"}`}
-    >
-                  {option.tag}
-                </span>
               </div>
 
               <p

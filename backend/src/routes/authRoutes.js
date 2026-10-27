@@ -19,4 +19,6 @@ router.post("/forgot-password/verify-otp", authController.verifyPasswordResetOtp
 router.post("/forgot-password/reset", authController.resetPassword);
 router.post("/login", authController.login);
 router.get("/me", requireAuth, authController.getCurrentUser);
+router.patch("/me", requireAuth, authController.updateProfile);
+router.patch("/change-password", requireAuth, authController.changePassword);
 export default router;

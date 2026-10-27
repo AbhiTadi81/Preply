@@ -5,16 +5,16 @@ export const Testimonials = () => {
   const testimonials = [
     {
       quote: "Practicing by speaking made my preparation feel much closer to a real interview.",
-      author: "Alex Rivers",
+      author: "Abhi Tadi",
       role: "Student Developer",
-      tag: "@alexrivers",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces"
+      tag: "@abhitadi",
+      avatar: "https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f577.png"
     },
     {
       quote: "The daily skill report showed me exactly which topics I needed to revise.",
-      author: "Jordan Lee",
+      author: "Yeswanth Varma",
       role: "Placement Candidate",
-      tag: "@jordantalks",
+      tag: "@yeswanthvarma",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces"
     },
     {

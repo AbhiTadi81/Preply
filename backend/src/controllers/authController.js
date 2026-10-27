@@ -14,14 +14,19 @@ import { User } from "../models/User.js";
 import { PendingRegistration } from "../models/PendingRegistration.js";
 import { PasswordReset } from "../models/PasswordReset.js";
 import { ENV } from "../config/env.js";
-import { sendPasswordResetOtp, sendSignupOtp } from "../services/emailService.js";
+
+const passwordAttempts = new Map();
+function enforcePasswordRateLimit(userId) {
+  const now = Date.now();
+  const recent = (passwordAttempts.get(userId) || []).filter((timestamp) => now - timestamp < 60000);
+  if (recent.length >= 5) return false;
+  recent.push(now);
+  passwordAttempts.set(userId, recent);
+  return true;
+}
 
 function createToken(user) {
-  return jwt.sign({
-    id: user._id.toString(),
-    email: user.email,
-    sessionVersion: user.sessionVersion || 0
-  }, ENV.JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ id: user._id.toString(), email: user.email, tokenVersion: user.tokenVersion || 0 }, ENV.JWT_SECRET, { expiresIn: "7d" });
 }
 
 function publicUser(user) {
@@ -30,6 +35,7 @@ function publicUser(user) {
     name: user.name,
     email: user.email,
     targetRole: user.targetRole,
+    preferences: user.preferences || { theme: "system" },
     createdAt: user.createdAt
   };
 }
@@ -339,6 +345,45 @@ export const authController = {
       const user = await User.findById(req.user.id);
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.json({ user: publicUser(user) });
+    } catch (error) {
+      return next(error);
+    }
+  },
+  async updateProfile(req, res, next) {
+    try {
+      const updates = {};
+      if (typeof req.body.name === "string") {
+        const name = req.body.name.trim();
+        if (name.length < 2 || name.length > 100) return res.status(400).json({ message: "Name must be between 2 and 100 characters" });
+        updates.name = name;
+      }
+      if (req.body.preferences && ["light", "dark", "system"].includes(req.body.preferences.theme)) {
+        updates["preferences.theme"] = req.body.preferences.theme;
+      }
+      if (!Object.keys(updates).length) return res.status(400).json({ message: "No valid profile changes provided" });
+      const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true, runValidators: true });
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res.json({ user: publicUser(user) });
+    } catch (error) {
+      return next(error);
+    }
+  },
+  async changePassword(req, res, next) {
+    try {
+      if (!enforcePasswordRateLimit(req.user.id)) return res.status(429).json({ message: "Too many password attempts. Try again later." });
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+      if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "Current password, matching new passwords, and confirmation are required" });
+      }
+      if (newPassword.length < 8) return res.status(400).json({ message: "New password must be at least 8 characters" });
+      const user = await User.findById(req.user.id);
+      if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      user.passwordHash = await bcrypt.hash(newPassword, 12);
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+      await user.save();
+      return res.json({ user: publicUser(user), token: createToken(user) });
     } catch (error) {
       return next(error);
     }

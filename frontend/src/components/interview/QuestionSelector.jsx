@@ -16,7 +16,7 @@ export const QuestionSelector = ({
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-2 sm:gap-3">
         {QUESTION_OPTIONS.map((count) => {
     const isSelected = selectedCount === count;
     return <button
@@ -25,11 +25,11 @@ export const QuestionSelector = ({
       id={`question-count-${count}`}
       disabled={disabled}
       onClick={() => onSelectCount(count)}
-      className={`py-3.5 px-3 rounded-2xl text-center font-bold transition-all border text-base cursor-pointer ${isSelected ? "bg-[#00ba66] text-white border-[#00ba66] shadow-sm ring-2 ring-[#00ba66]/20" : "bg-white text-slate-700 border-slate-200 hover:border-[#00ba66] hover:bg-slate-50/80"} ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+      className={`min-w-0 py-3.5 px-1.5 sm:px-3 rounded-2xl text-center font-bold transition-all border text-base cursor-pointer ${isSelected ? "bg-[#00ba66] text-white border-[#00ba66] shadow-sm ring-2 ring-[#00ba66]/20" : "bg-white text-slate-700 border-slate-200 hover:border-[#00ba66] hover:bg-slate-50/80"} ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
     >
               <span className="block text-lg sm:text-xl font-extrabold">{count}</span>
               <span
-      className={`block text-[11px] font-medium uppercase tracking-wider mt-0.5 ${isSelected ? "text-white/90" : "text-slate-400"}`}
+      className={`block whitespace-nowrap text-[10px] sm:text-[11px] font-medium uppercase tracking-normal sm:tracking-wider mt-0.5 ${isSelected ? "text-white/90" : "text-slate-400"}`}
     >
                 Questions
               </span>

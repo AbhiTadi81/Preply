@@ -6,12 +6,17 @@ import { ResumeUploader } from "../../components/interview/ResumeUploader";
 import { QuestionSelector } from "../../components/interview/QuestionSelector";
 import { DifficultySelector } from "../../components/interview/DifficultySelector";
 import { interviewService } from "../../services/interviewService";
+import { INTERVIEW_TYPES } from "../../utils/constants";
+import { useAuth } from "../../hooks/useAuth";
 export const InterviewSetup = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
   const [resumeContent, setResumeContent] = useState("");
   const [questionCount, setQuestionCount] = useState(null);
   const [difficulty, setDifficulty] = useState("Medium");
+  const [interviewType, setInterviewType] = useState(INTERVIEW_TYPES[0]);
+  const [targetRole, setTargetRole] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const handleFileSelect = (file, contentText) => {
@@ -19,7 +24,7 @@ export const InterviewSetup = () => {
     setResumeContent(contentText || (file ? file.name : ""));
     setErrorMessage(null);
   };
-  const isFormValid = selectedFile !== null && questionCount !== null && difficulty !== null;
+  const isFormValid = selectedFile !== null && questionCount !== null && difficulty !== null && targetRole.trim().length > 0;
   const handleStartInterview = async () => {
     if (!isFormValid || !selectedFile || !questionCount || isStarting) return;
     setIsStarting(true);
@@ -30,7 +35,8 @@ export const InterviewSetup = () => {
         resumeContent,
         questionCount,
         difficulty: difficulty.toLowerCase(),
-        role: "Full Stack & Software Engineer",
+        role: targetRole.trim(),
+        interviewType,
         topics: ["System Design", "Project Architecture", "Machine Learning"]
       });
       navigate(`/interview/${session.id}`);
@@ -80,6 +86,20 @@ export const InterviewSetup = () => {
             {
     /* 2. Number of Questions Selector */
   }
+            <div className="pt-2">
+              <label className="block text-sm font-bold text-slate-900 mb-2">Interview type</label>
+              <select value={interviewType} onChange={(event) => setInterviewType(event.target.value)} disabled={isStarting} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                {INTERVIEW_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-sm font-bold text-slate-900 mb-2">Target role</label>
+              <div className="relative">
+                <input value={targetRole} onChange={(event) => setTargetRole(event.target.value)} disabled={isStarting} required maxLength={100} placeholder="e.g. Full Stack Engineer" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:outline-none focus:border-[#00ba66] focus:ring-2 focus:ring-[#00ba66]/15" />
+              </div>
+            </div>
+
             <div className="pt-2">
               <QuestionSelector
     selectedCount={questionCount}

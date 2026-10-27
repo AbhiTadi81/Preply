@@ -122,11 +122,6 @@ export const Interview = () => {
   const handleNextQuestion = async () => {
     if (isLastQuestion) {
       setIsGeneratingReport(true);
-      try {
-        await interviewService.getFinalReport(session.id);
-      } catch (err) {
-        console.warn("Report generation notice:", err);
-      }
       navigate(`/interview/${session.id}/report`);
       return;
     }
@@ -216,4 +211,3 @@ export const Interview = () => {
       </Container>
     </div>;
 };
-

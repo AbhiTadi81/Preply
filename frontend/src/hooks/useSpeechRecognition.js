@@ -133,6 +133,7 @@ export function useSpeechRecognition() {
     cleanupAudio();
   }, [cleanupAudio]);
   const startListening = useCallback(async () => {
+    if (isListeningRef.current) return;
     setErrorMessage(null);
     isExplicitStopRef.current = false;
     networkRetryCountRef.current = 0;
@@ -141,8 +142,6 @@ export function useSpeechRecognition() {
     interimTranscriptRef.current = "";
     setInterimTranscript("");
     const SpeechClass = getSpeechRecognitionClass();
-    setupAudioMeter().catch(() => {
-    });
     if (!SpeechClass) {
       setIsSupported(false);
       setErrorMessage(
@@ -152,6 +151,7 @@ export function useSpeechRecognition() {
       isListeningRef.current = false;
       return;
     }
+    setupAudioMeter().catch(() => {});
     const startFreshInstance = () => {
       try {
         if (recognitionRef.current) {
@@ -198,6 +198,20 @@ export function useSpeechRecognition() {
             isListeningRef.current = false;
             cleanupAudio();
           } else if (event.error === "no-speech") {
+            setErrorMessage("No speech was detected. Try again or type your answer.");
+            setIsListening(false);
+            isListeningRef.current = false;
+            cleanupAudio();
+          } else if (event.error === "audio-capture") {
+            setErrorMessage("No microphone was found. Check your device or type your answer.");
+            setIsListening(false);
+            isListeningRef.current = false;
+            cleanupAudio();
+          } else if (event.error === "aborted") {
+            if (!isExplicitStopRef.current) setErrorMessage("Speech recognition stopped unexpectedly. Try again.");
+            setIsListening(false);
+            isListeningRef.current = false;
+            cleanupAudio();
           } else if (event.error === "network") {
             if (networkRetryCountRef.current < 2 && !isExplicitStopRef.current) {
               networkRetryCountRef.current += 1;

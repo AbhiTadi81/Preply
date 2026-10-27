@@ -76,6 +76,18 @@ export const authService = {
     localStorage.setItem("preply_user", JSON.stringify(response.user));
     return response.user;
   },
+  async updateProfile(changes) {
+    return storeSession({ ...await apiFetch("/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(changes)
+    }), token: localStorage.getItem("preply_token") });
+  },
+  async changePassword(values) {
+    return storeSession(await apiFetch("/auth/change-password", {
+      method: "PATCH",
+      body: JSON.stringify(values)
+    }));
+  },
 
   logout() {
     localStorage.removeItem("preply_token");

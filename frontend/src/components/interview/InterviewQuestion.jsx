@@ -1,18 +1,34 @@
-import { Sparkles, Bot, Volume2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Sparkles, Bot, Volume2, Square } from "lucide-react";
 export const InterviewQuestion = ({
   question,
   questionNumber,
   totalQuestions
 }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const handleSpeakQuestion = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(question.question);
       utterance.rate = 0.95;
       utterance.pitch = 1;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     }
   };
+  const handleStopSpeaking = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
+  };
+  useEffect(() => () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }, [question.question]);
   return <div
     id="interview-question-card"
     className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 card-subtle-shadow transition-all"
@@ -50,7 +66,7 @@ export const InterviewQuestion = ({
     /* Main Question Display */
   }
       <div className="relative">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug tracking-tight mb-4">
+        <h2 className="min-w-0 max-w-full break-words [overflow-wrap:anywhere] text-xl sm:text-2xl font-bold text-slate-900 leading-snug tracking-tight mb-4">
           "{question.question}"
         </h2>
 
@@ -65,8 +81,17 @@ export const InterviewQuestion = ({
     title="Listen to question"
   >
             <Volume2 className="w-3.5 h-3.5" />
-            <span>Read aloud</span>
+            <span>Speak aloud</span>
           </button>
+  {isSpeaking && <button
+    type="button"
+    onClick={handleStopSpeaking}
+    className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+    title="Stop reading the question aloud"
+  >
+    <Square className="w-3 h-3 fill-current" />
+    <span>Stop</span>
+  </button>}
 
           {question.subtopic && <span className="text-[11px] text-slate-400 font-medium italic">
               Context: {question.subtopic}

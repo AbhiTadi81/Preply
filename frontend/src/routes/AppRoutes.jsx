@@ -21,6 +21,7 @@ import { InterviewResult } from "../pages/Interview/InterviewResult";
 import { DailyReport } from "../pages/Reports/DailyReport";
 import { ReportHistory } from "../pages/Reports/ReportHistory";
 import { Profile } from "../pages/Profile/Profile";
+import { Settings } from "../pages/Settings/Settings";
 
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -55,6 +56,8 @@ export const AppRoutes = () => {
       <Route path="/reports/history" element={<ProtectedRoute><ReportHistory /></ProtectedRoute>} />
       <Route path="/reports/:id" element={<ProtectedRoute><DailyReport /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/history" element={<ProtectedRoute><ReportHistory /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>;
 };

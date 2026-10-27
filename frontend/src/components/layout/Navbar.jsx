@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, ChevronDown, History, Settings } from "lucide-react";
 import { NAV_LINKS } from "../../utils/constants";
 import { Button } from "../common/Button";
 import { MobileMenu } from "./MobileMenu";
 import { useAuth } from "../../hooks/useAuth";
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { user, logout } = useAuth();
   return <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-sm border-b border-slate-100 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -42,7 +43,7 @@ export const Navbar = () => {
             </Button>
           </Link>
 
-          {user ? <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+          {user ? <div className="relative flex items-center gap-3 pl-2 border-l border-slate-200">
               <div
     id="user-profile-badge"
     className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 border border-slate-200/80 text-xs font-semibold text-slate-700"
@@ -58,6 +59,11 @@ export const Navbar = () => {
                     </>;
   })()}
               </div>
+              <button type="button" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500"><ChevronDown className="w-4 h-4" /></button>
+              {profileOpen && <div className="absolute right-12 top-12 w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                <Link to="/history" onClick={() => setProfileOpen(false)} className="flex items-center gap-2 p-2 rounded-xl text-sm hover:bg-slate-50"><History className="w-4 h-4" />History</Link>
+                <Link to="/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-2 p-2 rounded-xl text-sm hover:bg-slate-50"><Settings className="w-4 h-4" />Settings</Link>
+              </div>}
 
               <button
     type="button"

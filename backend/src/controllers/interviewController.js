@@ -203,7 +203,16 @@ export const interviewController = {
           skillScores: normalizeSkillScores(reportData.skillScores)
         });
       }
-      return res.json(report);
+      return res.json({
+        ...report.toObject(),
+        questionFeedback: questions.map((question, index) => ({
+          question: question.question,
+          answer: answers[index]?.transcript || "",
+          score: answers[index]?.overallScore,
+          feedback: answers[index]?.feedback,
+          missingConcepts: answers[index]?.missingConcepts || []
+        }))
+      });
     } catch (error) {
       return next(error);
     }

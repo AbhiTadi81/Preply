@@ -13,7 +13,9 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env.js";
 import { User } from "../models/User.js";
+import { User } from "../models/User.js";
 
+export async function authMiddleware(req, res, next) {
 export async function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 

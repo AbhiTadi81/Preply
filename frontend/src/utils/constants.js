@@ -3,8 +3,14 @@ export const NAV_LINKS = [
   { name: "Home", href: "/" },
   { name: "Features", href: "#features" },
   { name: "How It Works", href: "#how-it-works" },
-  { name: "Testimonials", href: "#testimonials" },
-  { name: "Contact", href: "#contact" }
+  { name: "Testimonials", href: "#testimonials" }
+];
+export const INTERVIEW_TYPES = [
+  "Technical Interview",
+  "Coding Interview",
+  "HR & Behavioral Interview",
+  "Project-Based Interview",
+  "System Design Interview"
 ];
 export const TARGET_ROLES = [
   { id: "frontend", title: "Frontend Developer", skills: ["JavaScript", "React", "CSS/HTML", "Performance", "Browser APIs"] },

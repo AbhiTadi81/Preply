@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { X, ChevronRight, Play, LogIn, LogOut, Home, Sparkles, Layers, MessageSquare, Mail } from "lucide-react";
+import { X, ChevronRight, Play, LogIn, LogOut, Home, Sparkles, Layers, MessageSquare, History, Settings } from "lucide-react";
 import { NAV_LINKS } from "../../utils/constants";
 import { Button } from "../common/Button";
 import { useAuth } from "../../hooks/useAuth";
@@ -15,8 +15,8 @@ const getLinkIcon = (name) => {
       return <Layers className="w-4 h-4 text-emerald-600" />;
     case "testimonials":
       return <MessageSquare className="w-4 h-4 text-slate-400" />;
-    case "contact":
-      return <Mail className="w-4 h-4 text-slate-400" />;
+    case "history":
+      return <History className="w-4 h-4 text-slate-400" />;
     default:
       return <ChevronRight className="w-4 h-4 text-slate-400" />;
   }
@@ -122,6 +122,10 @@ export const MobileMenu = ({ isOpen, onClose }) => {
           </Link>
 
           {user ? <div className="pt-2 border-t border-slate-100 space-y-2.5">
+              <div className="grid grid-cols-2 gap-2">
+                <Link to="/history" onClick={onClose} className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-xs font-semibold"><History className="w-4 h-4" />History</Link>
+                <Link to="/settings" onClick={onClose} className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-xs font-semibold"><Settings className="w-4 h-4" />Settings</Link>
+              </div>
               <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs">
                 {(() => {
     const displayName = user.name && user.name !== "Candidate Demo" ? user.name : user.email ? user.email.split("@")[0] : "Candidate";

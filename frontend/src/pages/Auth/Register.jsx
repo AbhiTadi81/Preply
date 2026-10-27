@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User as UserIcon, Mail, Lock, Briefcase, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { User as UserIcon, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { Button } from "../../components/common/Button";
 import { Container } from "../../components/common/Container";
-import { TARGET_ROLES } from "../../utils/constants";
 import { isValidEmail } from "../../utils/helpers";
 export const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [targetRole, setTargetRole] = useState(TARGET_ROLES[0].title);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -25,7 +23,7 @@ export const Register = () => {
     }
     setLoading(true);
     try {
-      const response = await register(name, email.trim(), password, targetRole);
+      const response = await register(name, email.trim(), password);
       localStorage.setItem("preply_pending_registration", JSON.stringify({
         challengeId: response.challengeId,
         email: response.email,
@@ -126,24 +124,6 @@ export const Register = () => {
   >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                Target Role
-              </label>
-              <div className="relative">
-                <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <select
-    value={targetRole}
-    onChange={(e) => setTargetRole(e.target.value)}
-    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-sm bg-white focus:outline-none focus:border-[#00ba66] focus:ring-2 focus:ring-[#00ba66]/15 transition-all text-slate-900"
-  >
-                  {TARGET_ROLES.map((r) => <option key={r.id} value={r.title}>
-                      {r.title}
-                    </option>)}
-                </select>
               </div>
             </div>
 

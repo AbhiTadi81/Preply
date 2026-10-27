@@ -13,4 +13,6 @@ const router = Router();
 router.use(requireAuth);
 router.get("/today", reportController.getTodayReport);
 router.get("/history", reportController.getHistory);
+router.get("/interviews/:id/report.pdf", reportController.downloadReport);
+router.get("/interviews/:id/resume", reportController.downloadResume);
 export default router;
